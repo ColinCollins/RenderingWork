@@ -8,10 +8,11 @@ exports.createMainWindow = () => {
         minWidth: 800,
         minHeight: 640
     });
-
-    this.mainWindow.openDevTool();
+    console.log(__dirname);
     // and load the index.html of the app.
-    this.mainWindow.loadFile(`File://${__dirname}/project/index.html`);
+    this.mainWindow.loadFile(`${__dirname}/../index.html`);
+    // open development tools
+    this.mainWindow.webContents.openDevTools();
 
     this.mainWindow.on('closed', function () {
         console.log('MainWindow closed');
