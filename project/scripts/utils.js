@@ -1,27 +1,28 @@
 exports.bindArrayBuffer = function (gl, proxy) {
     let points = proxy.points;
-    let colors = proxy.colors;
-    let tempArray = [];
+    let vertexArray = [];
+    let colorArray = [];
     for (let i = 0; i < points.length; i++) {
-        let point = points[i];
-        tempArray.push(point.x);
-        tempArray.push(point.y);
+        let point = points[i].pos;
+        // add the z-index test method
+        vertexArray.push(point.x / (canvasWidth / 2));
+        vertexArray.push(point.y / (canvasHeight / 2));
+        vertexArray.push(point.z);
+
+        let color = points[i].color;
+        colorArray.push(color.r / 255.0);
+        colorArray.push(color.g / 255.0);
+        colorArray.push(color.b / 255.0);
+        if (color.a > 1) color.a = 1;
+        colorArray.push(color.a);
     }
 
-    let vertexbuffer = new Float32Array(tempArray);
+    let vertexbuffer = new Float32Array(vertexArray);
     // create the array buffer to save the data
     this.declDataBuffer(gl, proxy.a_Position, vertexbuffer, gl.FLOAT, 2);
 
-    tempArray = [];
-    for (let i = 0; i < colors.length; i++) {
-        let color = colors[i];
-        tempArray.push(color.r);
-        tempArray.push(color.g);
-        tempArray.push(color.b);
-    }
-
-    let colorbuffer = new Float32Array(tempArray);
-    this.declDataBuffer(gl, proxy.a_Color, colorbuffer, gl.FLOAT, 3);
+    let colorbuffer = new Float32Array(colorArray);
+    this.declDataBuffer(gl, proxy.a_Color, colorbuffer, gl.FLOAT, 4);
 }
 
 exports.declDataBuffer = function (gl, target, data, type, num) {
@@ -31,3 +32,26 @@ exports.declDataBuffer = function (gl, target, data, type, num) {
     gl.vertexAttribPointer(target, num, type, false, 0, 0);
     gl.enableVertexAttribArray(target);
 }
+/* rotate animation */
+exports.angleStep = 0;
+exports.data = new Date();
+
+exports.initRotation = function (step) {
+    this.angleStep = step;
+    this.data = new Date();
+}
+
+exports.rotate = function (angle) {
+    let now = new Date();
+    let elapse = now - this.data;
+    this.data = now;
+    let newAngle = angle + (this.angleStep * elapse) / 1000.0;
+    return newAngle % 360;
+}
+
+window.clearCanvas = function () {
+    gl.clear(gl.COLOR_BIT_BUFFER);
+    proxy.points = [];
+}
+// 是否进行深度检测，可以用于节省内存
+exports.isDepth = false;

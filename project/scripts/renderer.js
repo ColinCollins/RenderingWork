@@ -4,10 +4,9 @@
 // const Data = require('../lib/Data');
 const { ipcRenderer } = require('electron');
 const Program = require('./program');
-const Vec2 = require('./Vec2');
-const color = require('./color');
-const utils = require('./utils');
-const points = require('./points');
+const drawPoints = require('./drawPoints');
+const lines = require('./lines');
+const triangles = require('./triangle');
 
 main();
 
@@ -16,36 +15,118 @@ function main () {
 }
 
 ipcRenderer.on('load shader source', (e, sources) => {
-     pointScene(sources);
-    // #region
-/*
-    let currentAngle = 0.0;
-    // rotation animation
-     function tick () {
-        currentAngle = animate(currentAngle);
-        requestAnimationFrame(tick);
-    }
-
-    tick();
-*/
-// #endregion
+    // pointScene(sources);
+    // lineScene(sources);
+    // triangleScene(sources);
+    // translateScene(sources);
+    // cubeScene(sources);
+    // pointLightScene(sources);
+    // textureScene(sources);
 });
 
-function LineScene (sources) {
-    let gl = InitScene(sources);
-    BreshMenLine();
+// #region triangle
+function triangleScene (sources) {
+    InitScene(sources);
+    normalFillTriangle();
+    // myownFillTriangle();
 }
 
+function normalFillTriangle () {
+    for (let i = 0; i < 10; i++) {
+        let tempColor = new Color().random;
+        let point1 = new Point(getRandomVec (), tempColor);
+        let point2 = new Point(getRandomVec (), tempColor);
+        let point3 = new Point(getRandomVec (), tempColor);
+        let points = triangles.normalFillTriangle(point1, point2, point3, lines);
+        proxy.points = proxy.points.concat(points);
+        drawPoints.drawPoint(gl, proxy);
+    }
+
+    function getRandomVec () {
+        let width = Math.ceil(Math.random() * canvasWidth) - (canvasWidth / 2);
+        let height = Math.ceil(Math.random() * canvasHeight) - (canvasHeight / 2);
+        return new Vec3(width, height);;
+    }
+}
+
+function myownFillTriangle () {
+    for (let i = 0; i < 10; i++) {
+        let tempColor = new Color().random;
+        let point1 = new Point(getRandomVec (), tempColor);
+        let point2 = new Point(getRandomVec (), tempColor);
+        let point3 = new Point(getRandomVec (), tempColor);
+        let points = triangles.myownFillTriangle(point1, point2, point3, lines);
+        proxy.points = proxy.points.concat(points);
+        drawPoints.drawPoint(gl, proxy);
+    }
+
+    function getRandomVec () {
+        let width = Math.ceil(Math.random() * canvasWidth) - (canvasWidth / 2);
+        let height = Math.ceil(Math.random() * canvasHeight) - (canvasHeight / 2);
+        return new Vec3(width, height);;
+    }
+}
+// #endregion
+
+// #region Line
+function lineScene (sources) {
+    InitScene(sources);
+    /* get the pos1, pos2 */
+    // BresenhamLine();
+    // CohenSutherland();
+}
+
+function CohenSutherland () {
+    for (let i = 0; i < 100; i++) {
+        let tempColor = new Color().random;
+        let point1 = new Point(getRandomVec(), tempColor);
+        tempColor = new Color().random;
+        log(`CohenSutherLen tempColor: ${tempColor.r} : ${tempColor.g} : ${tempColor.b}`, false);
+        let point2 = new Point(getRandomVec(), tempColor);
+
+        let points = lines.CohenSutherland(point1, point2);
+        proxy.points = proxy.points.concat(points);
+        drawPoints.drawPoint(gl, proxy);
+    }
+
+    function getRandomVec () {
+        let width = Math.ceil(Math.random() * canvasWidth);
+        width = Math.random() > 0.6 ? width : -width;
+        let height = Math.ceil(Math.random() * canvasHeight);
+        height = Math.random() > 0.6 ? height : -height;
+        return new Vec3(width, height);
+    }
+}
+
+function BresenhamLine () {
+    for (let i = 0; i < 100; i++) {
+        let tempColor = new Color().random;
+        let point1 = new Point(getRandomVec (), tempColor);
+        let point2 = new Point(getRandomVec (), tempColor);
+
+        let points = lines.BresenhamLine(point1, point2);
+        proxy.points = proxy.points.concat(points);
+        drawPoints.drawPoint(gl, proxy);
+    }
+
+    function getRandomVec () {
+        let width = Math.ceil(Math.random() * canvasWidth) - (canvasWidth / 2);
+        let height = Math.ceil(Math.random() * canvasHeight) - (canvasHeight / 2);
+        return new Vec3(width, height);;
+    }
+}
+// #endregion
+
+// #region point
 function pointScene (sources) {
-    let gl = InitScene(sources);
+    InitScene(sources);
     // draw randowm point at the canvas
     canvas.onmousedown = function (handle) {
         let location = getTouchPoint(handle);
-        proxy.points.push(location);
-        let tempColor = new color(1.0, 0.0, 0.0);
-        proxy.colors.push(tempColor);
-        points.drawPoint(gl, proxy, utils);
-        // drawCircle(gl, proxy);
+        let tempPoint = new Point(location, new color(1.0, 0.0, 0.0));
+        proxy.points.push(tempPoint);
+        drawPoints.drawPoint(gl, proxy);
+        // drawPoints.drawCircle(gl, proxy, 10.0);
     }
 }
 
@@ -57,7 +138,33 @@ function getTouchPoint (handle) {
     x = ((x - rect.left) - canvasWidth / 2) / (canvasWidth / 2);
     y = (canvasHeight / 2 - (y - rect.top)) / (canvasHeight / 2);
 
-    return new Vec2(x, y);
+    return new Vec3(x, y);
+}
+
+// #endregion
+
+function InitScene (sources) {
+    window.canvas = $('#webgl')[0];
+    window.canvasWidth = canvas.width;
+    window.canvasHeight = canvas.height;
+
+    window.gl = getWebGLContext(canvas);
+    log(`Init gl: ${gl}`);
+
+    window.proxy = new Program(gl, sources.vshaderSource, sources.fshaderSource);
+    log(`Init program: ${proxy}`);
+
+    gl.useProgram(proxy.program);
+    /* attribute */
+    proxy.a_Position = getAttribProp(gl, proxy.program, 'a_Position');
+    proxy.a_Color = getAttribProp(gl, proxy.program, 'a_Color');
+    /* uniform */
+    proxy.u_PointSize = getUniformProp(gl, proxy.program, 'u_PointSize');
+    gl.uniform1f(proxy.u_PointSize, 2.0);
+
+    /* prototype */
+    proxy.points = [];
+    return;
 }
 
 function getAttribProp (gl, program, name) {
@@ -76,36 +183,4 @@ function getUniformProp (gl, program, name) {
         return null;
     }
     return prop;
-}
-
-function InitScene (sources) {
-    window.canvas = $('#webgl')[0];
-    window.canvasWidth = canvas.width;
-    window.canvasHeight = canvas.height;
-
-    window.gl = getWebGLContext(canvas);
-    log(`Init gl: ${gl}`);
-
-    window.proxy = new Program(gl, sources.vshaderSource, sources.fshaderSource);
-    log(`Init program: ${proxy}`);
-
-    gl.useProgram(proxy.program);
-
-    proxy.a_Position = getAttribProp(gl, proxy.program, 'a_Position');
-    proxy.a_Color = getAttribProp(gl, proxy.program, 'a_Color');
-    proxy.points = [];
-    proxy.colors = [];
-
-    return gl;
-}
-
-let angleStep = 0;
-let data = new Date();
-
-function animate (angle) {
-    let now = new Date();
-    let elapse = now - data;
-    data = now;
-    let newAngle = angle + (angleStep * elapse) / 1000.0;
-    return newAngle % 360;
 }

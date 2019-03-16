@@ -1,13 +1,13 @@
 exports.isDeveloped = true;
 
-window.log = (msg) => {
-    if (this.isDeveloped) console.log(msg);
+window.log = (msg, flag = true) => {
+    if (this.isDeveloped && flag) console.log(msg);
 }
 
-window.warn = (msg) => {
-    if (this.isDeveloped) console.warn(msg);
+window.warn = (msg, flag = true) => {
+    if (this.isDeveloped && flag) console.warn(msg);
 }
 
-window.error = (msg) => {
-    if (this.isDeveloped) console.error(msg);
+window.error = (msg, flag = true) => {
+    if (this.isDeveloped && flag) console.error(msg);
 }
