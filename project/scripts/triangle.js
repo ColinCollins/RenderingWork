@@ -148,103 +148,69 @@ function fillPixelsY (line1, line2, line3, lines) {
 */
 
 exports.normalFillTriangle = function (point1, point2, point3, lines) {
+    let tempPoints = [];
     let pos1 = point1.pos;
     let pos2 = point2.pos;
     let pos3 = point3.pos;
-    // p1 > p2 > p3 (y)
-    let p1 = null;
-    let p2 = null;
-    let p3 = null;
 
-    let tempPoints = [];
+    let dx1 = pos1.x - pos2.x;
+    let dy1 = pos1.y - pos2.y;
 
-    if (pos1.y >= pos2.y && pos1.y >= pos3.y) {
-        if (pos1.y === pos2.y) {
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(point3, point1, point2, lines));
-            return tempPoints;
-        }
-        else if (pos1.y === pos3.y) {
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(point2, point1, point3, lines));
-            return tempPoints;
-        }
-        else {
-            p1 = point1;
-        }
+    let dx2 = pos3.x - pos2.x;
+    let dy2 = pos3.y - pos2.y;
+
+    if ((dx1 === 0 && dx2 === 0 ) || (dy1 === 0 && dy2 === 0 ) || (dx1 / dy1 === dx2 / dy2)) {
+        warn(`Those points can't compose a triangle`);
+        return null;
     }
-    else if ((pos1.y > pos2.y && pos1.y < pos3.y) || (pos1.y < pos2.y && pos1.y > pos3.y)) {
-        p2 = point1;
-    }
-    else {
-        p3 = point1;
+    else if ((dx1 === 0 && dx2 !== 0) || (dy1 === 0 && dy2 !== 0) || (dx1 !== 0 && dx2 === 0) || (dy1 !== 0 && dy2 === 0)) {
+        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point2, point3, null, lines));
+        return tempPoints;
     }
 
-    if (pos2.y >= pos3.y) {
-        if (pos2.y === pos3.y) {
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point2, point3, lines));
-            return tempPoints;
-        }
-        if (p1) {
-            p2 = point2;
-            p3 = point3;
-        }
-        else if (p2) {
-            p1 = point2;
-            p3 = point3;
-        }
-        else {
-            p1 = point2;
-            p2 = point3;
-        }
-    }
-    else {
-        if (p1) {
-            p2 = point3;
-            p3 = point2;
-        }
-        else if (p2) {
-            p1 = point3;
-            p3 = point2;
-        }
-        else {
-            p1 = point3;
-            p2 = point2;
-        }
-    }
-
-    this.createTriangleBoundary(p1, p2, p3, lines);
-    tempPoints = tempPoints.concat(this.line1);
-    tempPoints = tempPoints.concat(this.line2);
-    tempPoints = tempPoints.concat(this.line3);
-    let p4 = createFourthPoint(p2.pos, this.line3);
-    // clear the lines
-    this.clearTriangleBoundaryCache();
-    tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p4, lines));
-    tempPoints = tempPoints.concat(this.fillFlatTriangle(p3, p2, p4, lines));
+    tempPoints = this.fillTrianglePixels(point1, point2, point3, lines);
+    if (!tempPoints) tempPoints = this.fillTrianglePixels(point2, point3, point1, lines);
+    if (!tempPoints) tempPoints = this.fillTrianglePixels(point3, point2, point1, lines);
+    if (!tempPoints) warn(`The normal triangle tempPoints is empty.`);
 
     return tempPoints;
 }
 
-function createFourthPoint (pos, line) {
-    for (let i = 0; i < line.length; i++) {
-        let point = line[i];
+exports.fillTrianglePixels = function (p1, p2, p3, lines) {
+    let tempPoints = [];
+    let pos = p1.pos;
+    this.createTriangleBoundary(p1, p2, p3, lines);
+    for (let i = 0; i < this.line2.length; i++) {
+        let point = this.line2[i];
         if (pos.y === point.pos.y) {
-            return new Point(point.pos, point.color);
+            tempPoints = tempPoints.concat(this.line1);
+            tempPoints = tempPoints.concat(this.line2);
+            tempPoints = tempPoints.concat(this.line3);
+            let p4 = new Point(point.pos, point.color);
+            // clear the lines
+            this.clearTriangleBoundaryCache();
+            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p3, p4, lines));
+            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p3, p2, p4, lines));
+            return tempPoints;
         }
     }
-    error(`can't find point4 in createFourthPoint method`);
+    this.clearTriangleBoundaryCache();
+    // error(`can't find point4 in createFourthPoint method`);
     return null;
 }
 
-exports.fillFlatTriangle = function (point1, point2, point3, lines) {
+exports.fillFlatTriangle = function (point1, point2, point3, point4, lines) {
     let tempPoints = [];
-    this.createTriangleBoundary(point1, point2, point3, lines);
+    // exectue the fillFlatTriangle straightly
+    if (!point4) point4 = point3;
+    this.createTriangleBoundary(point1, point2, point4, lines);
     let l1, l2 = [];
     if (this.line1.length > this.line3.length) {
         l1 = this.line1;
-        l2 = this.line3;
+        l2 = this.line2;
     }
     else {
-        l1 = this.line3;
+        l1 = this.line2;
         l2 = this.line1;
     }
     for (let i = 0; i < l1.length; i++) {
@@ -252,7 +218,9 @@ exports.fillFlatTriangle = function (point1, point2, point3, lines) {
         for (let j = 0; j < l2.length; j++) {
             let p2 = l2[j];
             if (p1.pos.y === p2.pos.y) {
-                tempPoints = tempPoints.concat(lines.BresenhamLine(p1, p2));
+                let line = lines.BresenhamLine(p1, p2);
+                analysisColor(point1, point2, point3, line)
+                tempPoints = tempPoints.concat(line);
                 l2.splice(j, 1);
                 break;
             }
@@ -262,5 +230,29 @@ exports.fillFlatTriangle = function (point1, point2, point3, lines) {
     this.clearTriangleBoundaryCache();
     return tempPoints;
 }
-
 // #endregion
+
+// triangle color analy, line use to save the line points
+function analysisColor (point1, point2, point3, line) {
+    let pos1 = point1.pos;
+    let pos2 = point2.pos;
+    let pos3 = point3.pos;
+    for (let i = 0; i < line.length; i++) {
+        let tempPoint = line[i];
+        let pos = line[i].pos;
+        let dir1 = pos1.dir(pos);
+        let dir2 = pos2.dir(pos);
+        let dir3 = pos3.dir(pos);
+
+        let totalDir = dir1 + dir2 + dir3;
+        let weight1 = dir1 / totalDir;
+        let weight2 = dir2 / totalDir;
+        let weight3 = dir3 / totalDir;
+
+        let color1 = new Color().set(point1.color).multiply(weight1);
+        let color2 = new Color().set(point2.color).multiply(weight2);
+        let color3 = new Color().set(point3.color).multiply(weight3);
+
+        tempPoint.color =  new Color().set(color1.add(color2.add(color3)));
+    }
+}

@@ -1,5 +1,5 @@
 exports.bindArrayBuffer = function (gl, proxy) {
-    let points = proxy.points;
+    let points = !this.isDepth ? proxy.points : this.depthArrayBuffer;
     let vertexArray = [];
     let colorArray = [];
     for (let i = 0; i < points.length; i++) {
@@ -8,7 +8,6 @@ exports.bindArrayBuffer = function (gl, proxy) {
         vertexArray.push(point.x / (canvasWidth / 2));
         vertexArray.push(point.y / (canvasHeight / 2));
         vertexArray.push(point.z);
-
         let color = points[i].color;
         colorArray.push(color.r / 255.0);
         colorArray.push(color.g / 255.0);
@@ -17,9 +16,10 @@ exports.bindArrayBuffer = function (gl, proxy) {
         colorArray.push(color.a);
     }
 
+
     let vertexbuffer = new Float32Array(vertexArray);
     // create the array buffer to save the data
-    this.declDataBuffer(gl, proxy.a_Position, vertexbuffer, gl.FLOAT, 2);
+    this.declDataBuffer(gl, proxy.a_Position, vertexbuffer, gl.FLOAT, 3);
 
     let colorbuffer = new Float32Array(colorArray);
     this.declDataBuffer(gl, proxy.a_Color, colorbuffer, gl.FLOAT, 4);
@@ -55,3 +55,24 @@ window.clearCanvas = function () {
 }
 // 是否进行深度检测，可以用于节省内存
 exports.isDepth = false;
+
+exports.depthArrayBuffer = [];
+
+exports.pushDepthBuffer = function (point) {
+    if (!isDepth) {
+        warn(`Depth test not open`);
+        return;
+    }
+    let array = depthArrayBuffer;
+    let pos = point.pos;
+    for (let i = 0; i < array.length; i++) {
+        let tempPos = array[i];
+        if (tempPos.x === pos.x && tempPos.y === pos.y) {
+            // view dir is lead to -z-index
+            if (tempPos.z > pos.z) {
+                array[i] = point;
+                break;
+            }
+        }
+    }
+}

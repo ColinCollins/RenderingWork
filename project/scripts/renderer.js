@@ -17,7 +17,7 @@ function main () {
 ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
     // lineScene(sources);
-    // triangleScene(sources);
+     triangleScene(sources);
     // translateScene(sources);
     // cubeScene(sources);
     // pointLightScene(sources);
@@ -27,7 +27,7 @@ ipcRenderer.on('load shader source', (e, sources) => {
 // #region triangle
 function triangleScene (sources) {
     InitScene(sources);
-    normalFillTriangle();
+     normalFillTriangle();
     // myownFillTriangle();
 }
 
@@ -35,11 +35,15 @@ function normalFillTriangle () {
     for (let i = 0; i < 10; i++) {
         let tempColor = new Color().random;
         let point1 = new Point(getRandomVec (), tempColor);
+        tempColor = new Color().random;
         let point2 = new Point(getRandomVec (), tempColor);
+        tempColor = new Color().random;
         let point3 = new Point(getRandomVec (), tempColor);
         let points = triangles.normalFillTriangle(point1, point2, point3, lines);
-        proxy.points = proxy.points.concat(points);
-        drawPoints.drawPoint(gl, proxy);
+        if (points) {
+            proxy.points = proxy.points.concat(points);
+            drawPoints.drawPoint(gl, proxy);
+        }
     }
 
     function getRandomVec () {
@@ -73,7 +77,7 @@ function lineScene (sources) {
     InitScene(sources);
     /* get the pos1, pos2 */
     // BresenhamLine();
-    // CohenSutherland();
+     CohenSutherland();
 }
 
 function CohenSutherland () {

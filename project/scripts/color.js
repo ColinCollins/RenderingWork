@@ -19,11 +19,13 @@ prop.equal = function (color) {
 }
 
 prop.multiply = function (value) {
+    this.a *= 255;
+    this.a *= value;
     return new Color(
         this.r *= value,
         this.g *= value,
         this.b *= value,
-        this.a *= value
+        this.a
     );
 }
 

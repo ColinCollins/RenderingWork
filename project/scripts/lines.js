@@ -113,9 +113,7 @@ function createPoint (x, y, totalDir, point1, point2) {
 /* analysis color keep in triangle */
 function analysisColor (pos, totalDir, point1, point2) {
     let color1 = new Color().set(point1.color);
-    color1.a *= 255;
     let color2 = new Color().set(point2.color);
-    color2.a *= 255;
     let pos1 = point1.pos;
     if (color1.equal(color2)) {
         return color1;
