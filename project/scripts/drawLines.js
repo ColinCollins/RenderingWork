@@ -179,7 +179,7 @@ function calculateNewPoint(lostPoint, containPoint) {
     }
 }
 
-function isContain(pos) {
+window.isContain = function (pos) {
     let width = canvasWidth / 2;
     let height = canvasHeight / 2;
 

@@ -18,7 +18,7 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
     // line 不能使用 depth 检测
     // lineScene(sources);
-     triangleScene(sources);
+    // triangleScene(sources);
     // translateScene(sources);
     // textureScene(sources);
     // cubeScene(sources);
@@ -36,27 +36,27 @@ function translateScene (sources) {
     let color2 = new Color().random;
     let color3 = new Color().random;
 
-    // translate
-    clearCanvas();
     // setIn
     let pos1 = new Vector3([100, 0, 0]);
     let pos2 = new Vector3([-100, 0, 0]);
     let pos3 = new Vector3([0, 150, 0]);
 
     // draw(pos1, pos2, pos3, color1, color2, color3);
+    // not use the depth
+    function translate () {
+        // move
+        // rotate
+        // skew
+        // scale
+        clearCanvas();
+        window.requestAnimationFrame(tranlsate);
+    }
 
-    function drawTranslate (pos1, pos2, pos3, color1, color2, color3) {
-        let point1 = new Point(pos1, color1);
-        let point2 = new Point(pos2, color2);
-        let point3 = new Point(pos3, color3);
-        let points = triangles.normalFillTriangle(point1, point2, point3, lines);
-        if (points) {
-            proxy.points = proxy.points.concat(points);
-            drawPoints.drawPoint(gl, proxy);
-        }
-        else {
-            warn(`drawTriangle get Error`);
-        }
+    translate();
+
+    function clearCanvas () {
+        gl.clear(gl.COLOR_BIT_BUFFER);
+        utils.trianglesBuffer = [];
     }
 }
 
@@ -71,7 +71,7 @@ function triangleScene (sources) {
 
 function normalFillTriangle () {
     // Random Triangle generator
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 3; i++) {
         let tempColor = new Color().random;
         let point1 = new Point(getRandomVec (), tempColor);
         tempColor = new Color().random;
@@ -81,9 +81,9 @@ function normalFillTriangle () {
 
         utils.trianglesBuffer.push(new Triangle(point1, point2, point3));
     }
-    // utils.isDepth = true;
+    utils.isDepth = true;
     // isContain Test
-/*
+    /*
     let tempColor = new Color().random;
     let point1 = new Point(new Vec3(-100, 0), tempColor);
     tempColor = new Color().random;
@@ -93,13 +93,13 @@ function normalFillTriangle () {
     utils.trianglesBuffer.push(new Triangle(point1, point2, point3));
 
     tempColor = new Color().random;
-    let point4 = new Point(new Vec3(-100, 150), tempColor);
+    let point4 = new Point(new Vec3(-100, 50), tempColor);
     tempColor = new Color().random;
-    let point5 = new Point(new Vec3(100, 150), tempColor);
+    let point5 = new Point(new Vec3(100, 50), tempColor);
     tempColor = new Color().random;
-    let point6 = new Point(new Vec3(0, 300), tempColor);
-    utils.trianglesBuffer.push(new Triangle(point4, point5, point6)); */
-
+    let point6 = new Point(new Vec3(0, 200), tempColor);
+    utils.trianglesBuffer.push(new Triangle(point4, point5, point6)); 
+    */
 
     // point contain test
     // utils.trianglesBuffer[0].checkPointInSideTriangle(new Vec3(150, 75));

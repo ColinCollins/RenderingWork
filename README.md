@@ -165,7 +165,36 @@ drawLine 大改，因为剪裁算法对象已经不能单独作为绘制方案�
 更新完成之后，depth 的效率更低，原因是遍历像素点过多。
 遍历之后反而效率比不开启 depth 更低，可能是原先的算法有问题 isContain 的算法是对的，但是可能数据并没有真正的实现 depthTest。
 
+优化方案：
+用空间换时间。
+声明 width * height 数组，记录相同 pos index 的像素数据信息，之后遍历 array 节省时间，这样可以减少大量的遍历数据时间，甚至比原来的数据处理要快，因为遍历的数据更少。
 
+无法考虑 viewport 之外的像素点，不然会报错，__这个部分以后在考虑要通过什么内容修复。__
+
+方案弊端还有一个：
+误差问题，误差导致的覆盖出现瑕疵，理论上应该是 x,y index 对应的问题？又或者是那一条 line 的 index 的问题？
+屏蔽了 continue 语句，还是出现了这个问题
+应该是 x,y 的问题了。
+是随机出现的误差瑕疵，因此应该是 js 本身的数据误差导致的。
 
 texture Scene 绘制
 新建 texture class
+难度在于纹理映射，如何将像素数据不同的信息绘制到相同既定长度的 object 上
+涉及：线性差值，双线性差值，mipmap(可能太复杂了，不一定会写)
+
+- 方案参考： https://www.bbsmax.com/A/qVdeYvn1dP/
+
+- https://www.bbsmax.com/A/KE5QYyk5LG/
+
+
+3.22 优先度较低的 Clip (可以暂时不做考虑):
+- https://zhuanlan.zhihu.com/p/43586784
+
+3.22:
+deadLine:
+3.23: translate
+3.23 texture nearst 差值， linear 差值计算，要求从 engine 上面参考
+
+3.24: cube
+3.24： textureCube
+3.25: pointLight? (暂定)

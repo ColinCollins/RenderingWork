@@ -63,43 +63,28 @@ exports.circlesBuffer = [];
 // 最终的像素数据集合
 exports.arrayBuffer = [];
 // depth 前提下存储 tirangles 数据, 传参影响有效
-exports.pushDepthBuffer = function (triangleBuffer, index) {
-    // 记录数据
-    this.depthTriangleBuffer.push(triangleBuffer);
+exports.pushDepthBuffer = function (triangleBuffer) {
     // depthTest not open
-    if (!this.isDepth) return;
-    // 三角形完整填充数据集合
-    let depthTriangles = this.depthTriangleBuffer;
-    // 对应三角形顶点数据集合
-    let pointTriangles = this.trianglesBuffer;
-    // 当前三角形顶点数据
-    let cpmTriangle = pointTriangles[index];
-    // 因为 后绘制的三角形一般会在上面所以不用全都遍历，很消耗性能。
-    for (let i = 0; i < index; i++) {
-        let triangle = pointTriangles[i];
-        if (triangle.isContain(cpmTriangle)) {
-            // 因为 depthTriangle 导入顺序和 pointsTriangles 是相同的
-            let trianglePointsData = depthTriangles[i];
-            // 遍历传入三角形像素数据
-            for (let j = 0; j < triangleBuffer.length; j++) {
-                let pos1 = triangleBuffer[j].pos;
-                for (let k = 0; k < trianglePointsData.length; k++) {
-                    let pos2 = trianglePointsData[k].pos;
-                    if (pos1.x === pos2.x && pos1.y === pos2.y) {
-                        if (pos1.z <= pos2.z) {
-                            trianglePointsData[k].dropByDepth = true;
-                            break;
-                        }
-                        triangleBuffer[j].dropByDepth = true;
-                        break;
-                    }
-                }
-            }
+    if (!this.isDepth) {
+        // 记录数据
+        this.depthTriangleBuffer.push(triangleBuffer);
+        return;
+    };
+    for (let i = 0; i < triangleBuffer.length; i++) {
+        let point = triangleBuffer[i];
+        let x = parseInt(point.pos.x) - 1 + parseInt(canvasWidth / 2);
+        let y = parseInt(point.pos.y) - 1 + parseInt(canvasHeight / 2);
+        let tarPoint = this.depthTriangleBuffer[x][y];
+        if (tarPoint instanceof Point) {
+            if (parseInt(tarPoint.pos.z) > parseInt(point.pos.z)) continue;
         }
+        this.depthTriangleBuffer[x][y] = point;
     }
 }
 // 存储数据到 arrayBuffer 中
 exports.inputDataArrayBuffer = function () {
+    // 清空深度检测数据缓存
+    this.depthTriangleBuffer = this.isDepth ? initPixelArea() : [];
     // input points
     for (let i = 0; i < this.pointsBuffer.length; i++) {
         this.arrayBuffer.push(this.pointsBuffer[i])
@@ -118,14 +103,37 @@ exports.inputDataArrayBuffer = function () {
         this.pushDepthBuffer(triangleBuffer, i);
     }
     // 所有的像素点数据处理完毕之后写入数据到 arrayBuffer
-    for (let j = 0; j < this.depthTriangleBuffer.length; j++) {
-        let points = this.depthTriangleBuffer[j];
-        for (let k = 0; k < points.length; k++) {
-            let point = points[k];
-            if (point.dropByDepth) continue;
-            this.arrayBuffer.push(point);
+    if (this.isDepth) {
+        for (let j = 0; j < this.depthTriangleBuffer.length; j++) {
+            let points = this.depthTriangleBuffer[j];
+            for (let k = 0; k < points.length; k++) {
+                let point = points[k];
+                if (point === -1 || point.dropByDepth) continue;
+                this.arrayBuffer.push(point);
+            }
         }
     }
-    // 清空深度检测数据缓存
-    this.depthTriangleBuffer = [];
+    else {
+        for (let j = 0; j < this.depthTriangleBuffer.length; j++) {
+            let points = this.depthTriangleBuffer[j];
+            for (let k = 0; k < points.length; k++) {
+                let point = points[k];
+                // 临时的 clip 处理
+                if (point.dropByDepth || isContain(point.pos)) continue;
+                this.arrayBuffer.push(point);
+            }
+        }
+    }
+}
+
+function initPixelArea () {
+    let array = [];
+    for (let i = 0; i < canvasWidth; i++) {
+        let height = [];
+        for (let j = 0; j < canvasHeight; j++) {
+            height.push(-1);
+        }
+        array.push(height)
+    }
+    return array;
 }
