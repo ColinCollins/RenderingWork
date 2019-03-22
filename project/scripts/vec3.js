@@ -29,6 +29,38 @@ prop.dir = function (vec3) {
     return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
 }
 
+prop.cross2D = function (pos) {
+    return this.x * pos.y - this.y * pos.x;
+}
+
+prop.dot2D = function (pos) {
+    return this.x * pos.y + this.y * pos.x;
+}
+
+prop.add = function (newVec3) {
+    if (!(newVec3 instanceof Vec3)) {
+        warn(`Vec3 add method can't accept value: ${newVec3}`) ;
+        return;
+    }
+    return new Vec3(
+        this.x + newVec3.x,
+        this.y + newVec3.y,
+        this.z + newVec3.z
+    );
+}
+
+prop.cut = function (newVec3) {
+    if (!(newVec3 instanceof Vec3)) {
+        warn(`Vec3 add method can't accept value: ${newVec3}`) ;
+        return;
+    }
+    return new Vec3(
+        this.x - newVec3.x,
+        this.y - newVec3.y,
+        this.z - newVec3.z
+    );
+}
+
 Object.defineProperty(Vec3.prototype, 'ZERO', {
     get function () {
         return new Vec3();

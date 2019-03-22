@@ -73,14 +73,16 @@ exports.BresenhamLine = function (point1, point2) {
     }
     return tempPoints;
 }
+
 /*
     这里有两个解决方案：
     一：增加 point 的属性，constructor 增加属性值 isContain 判断，检测是否存在与 viewport 内
     二：通过新的函数形式判断是否需要将 point 添加进入 proxy.points 数组。
     原理上是一样的
  */
+
 exports.CohenSutherland = function (point1, point2) {
-   // 这里直接引用 BreshMen 算法
+    // 这里直接引用 BreshMen 算法
     let pos1 = point1.pos;
     let pos2 = point2.pos;
 
@@ -89,21 +91,21 @@ exports.CohenSutherland = function (point1, point2) {
         return [];
     }
     else if (isContain(pos1) && isContain(pos2)) {
-        return this.BresenhamLine(point1, point2);
+        return [point1, point2];
     }
     else if (isContain(pos1) && !isContain(pos2)) {
         let newPoint = calculateNewPoint(point2, point1);
         // log (`newPoint: ${newPoint.pos.x} : ${newPoint.pos.y}`, false);
-        return this.BresenhamLine(point1, newPoint);;
+        return [point1, newPoint];
     }
     else if (!isContain(pos1) && isContain(pos2)) {
         let newPoint = calculateNewPoint(point1, point2);
         // log (`newPoint: ${newPoint.pos.x} : ${newPoint.pos.y}`, false);
-        return this.BresenhamLine(newPoint, point2);;
+        return [newPoint, point2];
     }
 }
 
-function createPoint (x, y, totalDir, point1, point2) {
+function createPoint(x, y, totalDir, point1, point2) {
     let tempPos = new Vec3(x, y);
     let tempColor = analysisColor(tempPos, totalDir, point1, point2);
     let tempPoint = new Point(tempPos, tempColor);
@@ -111,7 +113,7 @@ function createPoint (x, y, totalDir, point1, point2) {
 }
 
 /* analysis color keep in triangle */
-function analysisColor (pos, totalDir, point1, point2) {
+function analysisColor(pos, totalDir, point1, point2) {
     let color1 = new Color().set(point1.color);
     let color2 = new Color().set(point2.color);
     let pos1 = point1.pos;
@@ -125,8 +127,10 @@ function analysisColor (pos, totalDir, point1, point2) {
     newColor.a /= 255;
     return newColor;
 }
+
+
 // clip out of viewport point
-function calculateNewPoint (lostPoint, containPoint) {
+function calculateNewPoint(lostPoint, containPoint) {
     let width = canvasWidth / 2;
     let height = canvasHeight / 2;
 
@@ -138,7 +142,7 @@ function calculateNewPoint (lostPoint, containPoint) {
 
     let len = (lostPos.x * containPos.y) - (lostPos.y * containPos.x);
 
-    if (dy === 0 ) {
+    if (dy === 0) {
         if (lostPos.x < -width) {
             return new Point(new Vec3(-width, lostPos.y), lostPoint.color);
         }
@@ -146,7 +150,7 @@ function calculateNewPoint (lostPoint, containPoint) {
             return new Point(new Vec3(width, lostPos.y), lostPoint.color);
         }
     }
-    else if (dx === 0){
+    else if (dx === 0) {
         if (lostPos.y < -height) {
             return new Point(new Vec3(lostPos.x, -height), lostPoint.color);
         }
@@ -175,7 +179,7 @@ function calculateNewPoint (lostPoint, containPoint) {
     }
 }
 
-function isContain (pos) {
+function isContain(pos) {
     let width = canvasWidth / 2;
     let height = canvasHeight / 2;
 

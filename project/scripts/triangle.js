@@ -1,258 +1,153 @@
-exports.line1 = [];
-exports.line2 = [];
-exports.line3 = [];
-// #region myownFillTriangle
-/*
-    这是我自己想出来的绘制方案，应该会有瑕疵，但是应该最终可以实现，通过最长边 dx / dy (这里需要通过 BresherHam 获取 points 数组)
-    保留三个线段的 points 数组之后循环嵌套进行 piexl 的 fill，好处是我们不需要重新找一个 point4 而且可以利用现有的方法，对后续的
-    color weight 应该也有帮助。
-*/
-exports.myownFillTriangle = function (point1, point2, point3, lines) {
-    let tempPoints = [];
-    tempPoints.push(point1);
-    tempPoints.push(point2);
-    tempPoints.push(point3);
+function Triangle (point1, point2, point3) {
+    this.point1 = point1;
+    this.point2 = point2;
+    this.point3 = point3;
 
-    let pos1 = point1.pos;
-    let pos2 = point2.pos;
-    let pos3 = point3.pos;
-
-    let dir1 = Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
-    let dir2 = Math.max(Math.abs(pos1.x - pos3.x), Math.abs(pos1.y - pos3.y));
-    let dir3 = Math.max(Math.abs(pos2.x - pos3.x), Math.abs(pos2.y - pos3.y));
-
-    if (dir1 >= dir2 && dir1 >= dir3) {
-        tempPoints = tempPoints.concat(this.myownFillFlatTriangle(point1, point2, point3, lines));
-    }
-    else if (dir2 >= dir1 && dir2 >= dir3) {
-        tempPoints = tempPoints.concat(this.myownFillFlatTriangle(point1, point3, point2, lines));
-    }
-    else {
-        tempPoints = tempPoints.concat(this.myownFillFlatTriangle(point2, point3, point1, lines));
-    }
-
-    return tempPoints;
-}
-// 生成三角形边框
-exports.createTriangleBoundary = function (point1, point2, point3, lines) {
-    this.line1 = lines.BresenhamLine(point1, point2);
-    this.line2 = lines.BresenhamLine(point2, point3);
-    this.line3 = lines.BresenhamLine(point3, point1);
-    // remove the repeat point
-    this.line1.splice(0, 2);
-    this.line2.splice(0, 2);
-    this.line3.splice(0, 2);
-}
-
-exports.clearTriangleBoundaryCache = function () {
-    this.line1 = [];
-    this.line2 = [];
-    this.line3 = [];
-}
-
-// line1 must be the longest
-exports.myownFillFlatTriangle = function (point1, point2, point3, lines) {
-    this.createTriangleBoundary(point1, point2, point3, lines);
-    let pos1 = point1.pos;
-    let pos2 = point2.pos;
-    // left to right
-    let dx = pos1.x - pos2.x;
-    let dy = pos1.y - pos2.y;
-    let tempPoints = [];
-    tempPoints = tempPoints.concat(this.line1);
-    tempPoints = tempPoints.concat(this.line2);
-    tempPoints = tempPoints.concat(this.line3);
-
-    // 最长边的 dx 和 dy 比不一定与其他两个边的保持一致
-    if (Math.abs(dx) > Math.abs(dy)) {
-        tempPoints = tempPoints.concat(fillPixelsX(this.line1, this.line2, this.line3, lines));
-    }
-    else {
-        // vertical triangle
-        tempPoints = tempPoints.concat(fillPixelsY(this.line1, this.line2, this.line3, lines));
-    }
-    return tempPoints;
-}
-
-function fillPixelsX (line1, line2, line3, lines) {
-    let tempPoints = [];
-    // save time waste
-    let isFind = false;
-    for (let i = 0; i < line1.length; i++) {
-        let p1 = line1[i];
-        isFind = false;
-        for (let j = 0; j < line2.length; j++) {
-            let p2 = line2[j];
-            if (p1.pos.x === p2.pos.x) {
-                let fillLine = lines.BresenhamLine(p1, p2);
-                tempPoints = tempPoints.concat(fillLine);
-                line2.splice(j, 1);
-                isFind = true;
-                break;
-            }
-        }
-        if (!isFind) {
-            for (let j = 0; j < line3.length; j++) {
-                let p2 = line3[j];
-                if (p1.pos.x === p2.pos.x) {
-                    let fillLine = lines.BresenhamLine(p1, p2);
-                    tempPoints = tempPoints.concat(fillLine);
-                    line3.splice(j, 1);
-                    break;
-                }
-            }
-        }
-    }
-    return tempPoints;
-}
-
-function fillPixelsY (line1, line2, line3, lines) {
-    let tempPoints = [];
-    // save time waste
-    let isFind = false;
-    for (let i = 0; i < line1.length; i++) {
-        let p1 = line1[i];
-        isFind = false;
-        for (let j = 0; j < line2.length; j++) {
-            let p2 = line2[j];
-            if (p1.pos.y === p2.pos.y) {
-                let fillLine = lines.BresenhamLine(p1, p2);
-                tempPoints = tempPoints.concat(fillLine);
-                line2.splice(j, 1);
-                isFind = true;
-                break;
-            }
-        }
-        if (!isFind) {
-            for (let j = 0; j < line3.length; j++) {
-                let p2 = line3[j];
-                if (p1.pos.y === p2.pos.y) {
-                    let fillLine = lines.BresenhamLine(p1, p2);
-                    tempPoints = tempPoints.concat(fillLine);
-                    line3.splice(j, 1);
-                    break;
-                }
-            }
-        }
-    }
-
-    return tempPoints;
-}
-// #endregion
-// #region normalFillTriangle
-/*
-    根据当前的绘制需求，首先需要分离出最高顶点和最低顶点，再判断是否存在相同水平坐标顶点
-    排序最优先，不需要考虑是否要保留 point1,2,3 但是为了数据着想，还是新建 point 对象用于存储 point1,2,3
-    top: p1,
-    bottom: p3
-*/
-
-exports.normalFillTriangle = function (point1, point2, point3, lines) {
-    let tempPoints = [];
-    let pos1 = point1.pos;
-    let pos2 = point2.pos;
-    let pos3 = point3.pos;
+    let pos1 = this.point1.pos;
+    let pos2 = this.point2.pos;
+    let pos3 = this.point3.pos;
 
     let dx1 = pos1.x - pos2.x;
+    let dx2 = pos2.x - pos3.x;
+    let dx3 = pos3.x - pos1.x;
+
     let dy1 = pos1.y - pos2.y;
+    let dy2 = pos2.y - pos3.y;
+    let dy3 = pos3.y - pos1.y;
+    // vector
+    this.lineVector1 = new Vec3(dx1, dy1);
+    this.lineVector2 = new Vec3(dx2, dy2);
+    this.lineVector3 = new Vec3(dx3, dy3);
 
-    let dx2 = pos3.x - pos2.x;
-    let dy2 = pos3.y - pos2.y;
-
-    if ((dx1 === 0 && dx2 === 0 ) || (dy1 === 0 && dy2 === 0 ) || (dx1 / dy1 === dx2 / dy2)) {
-        warn(`Those points can't compose a triangle`);
-        return null;
-    }
-    else if ((dx1 === 0 && dx2 !== 0) || (dy1 === 0 && dy2 !== 0) || (dx1 !== 0 && dx2 === 0) || (dy1 !== 0 && dy2 === 0)) {
-        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point2, point3, null, lines));
-        return tempPoints;
-    }
-
-    tempPoints = this.fillTrianglePixels(point1, point2, point3, lines);
-    if (!tempPoints) tempPoints = this.fillTrianglePixels(point2, point3, point1, lines);
-    if (!tempPoints) tempPoints = this.fillTrianglePixels(point3, point2, point1, lines);
-    if (!tempPoints) warn(`The normal triangle tempPoints is empty.`);
-
-    return tempPoints;
+    // 质心
+    this.centroid = this.getCentroid(pos1, pos2, pos3);
 }
 
-exports.fillTrianglePixels = function (p1, p2, p3, lines) {
-    let tempPoints = [];
-    let pos = p1.pos;
-    this.createTriangleBoundary(p1, p2, p3, lines);
-    for (let i = 0; i < this.line2.length; i++) {
-        let point = this.line2[i];
-        if (pos.y === point.pos.y) {
-            tempPoints = tempPoints.concat(this.line1);
-            tempPoints = tempPoints.concat(this.line2);
-            tempPoints = tempPoints.concat(this.line3);
-            let p4 = new Point(point.pos, point.color);
-            // clear the lines
-            this.clearTriangleBoundaryCache();
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p3, p4, lines));
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p3, p2, p4, lines));
-            return tempPoints;
-        }
+let prop = Triangle.prototype;
+/*
+    碰撞检测原理类似，这回是 3D triangle 检测是否相交（包含）实际还是 2D 考虑：
+    - 相交一点在三角形内
+    - 相交两点在三角形内
+    - 内置三角形
+    - 不相交
+*/
+prop.isContain = function (triangle) {
+    // 实际上只要有一边和另一个三角形相交就能判断是相交三角形，最多检测两条线
+    // 额外考虑的是内置与不相交的情况
+    let pos1 = triangle.point1.pos;
+    let pos2 = triangle.point2.pos;
+    let pos3 = triangle.point3.pos;
+    if (this.checkLinesCross(pos1, pos2) || this.checkLinesCross(pos2, pos3) || this.checkLinesCross(pos1, pos3)) {
+        return true;
     }
-    this.clearTriangleBoundaryCache();
-    // error(`can't find point4 in createFourthPoint method`);
-    return null;
+
+    // 逆时针转 cross > 0 点，表示在内侧， 算一个点就行
+    if (this.checkPointInSideTriangle(pos1)) return true;
+
+    return false;
+}
+// 这里应该要测三条边, 确保应该是有可能相交
+prop.checkLinesCross = function (pos1, pos2) {
+    let tempPos1 = this.point1.pos;
+    let tempPos2 = this.point2.pos;
+    let tempPos3 = this.point3.pos;
+
+    if (
+        isLineCrossed(pos1, pos2, tempPos1, tempPos2, this.lineVector1) ||
+        isLineCrossed(pos1, pos2, tempPos2, tempPos3, this.lineVector2) ||
+        isLineCrossed(pos1, pos2, tempPos3, tempPos1, this.lineVector3)
+    ) {
+        log(`checkLinesCross: isContained.`);
+        return true;
+    }
+
+    return false;
 }
 
-exports.fillFlatTriangle = function (point1, point2, point3, point4, lines) {
-    let tempPoints = [];
-    // exectue the fillFlatTriangle straightly
-    if (!point4) point4 = point3;
-    this.createTriangleBoundary(point1, point2, point4, lines);
-    let l1, l2 = [];
-    if (this.line1.length > this.line3.length) {
-        l1 = this.line1;
-        l2 = this.line2;
-    }
-    else {
-        l1 = this.line2;
-        l2 = this.line1;
-    }
-    for (let i = 0; i < l1.length; i++) {
-        let p1 = l1[i];
-        for (let j = 0; j < l2.length; j++) {
-            let p2 = l2[j];
-            if (p1.pos.y === p2.pos.y) {
-                let line = lines.BresenhamLine(p1, p2);
-                analysisColor(point1, point2, point3, line)
-                tempPoints = tempPoints.concat(line);
-                l2.splice(j, 1);
-                break;
-            }
-        }
+prop.checkPointInSideTriangle = function (pos) {
+    let tempPos1 = this.point1.pos;
+    let tempPos2 = this.point2.pos;
+    let tempPos3 = this.point3.pos;
+
+    let newVector1 = new Vec3((tempPos1.x - pos.x), (tempPos1.y - pos.y));
+    let newVector2 = new Vec3((tempPos2.x - pos.x), (tempPos2.y - pos.y));
+    let newVector3 = new Vec3((tempPos3.x - pos.x), (tempPos3.y - pos.y));
+
+    let d1 = this.lineVector1.cross2D(newVector1);
+    let d2 = this.lineVector2.cross2D(newVector2);
+    let d3 = this.lineVector3.cross2D(newVector3);
+    // 逆时针
+    if (d1 > 0 && d2 > 0 && d3 > 0) return true;
+    // 顺时针
+    if (d1 < 0 && d2 < 0 && d3 < 0) return true;
+    return false;
+}
+
+// #region move
+/*
+    move prehaps need triangle origin to save the position
+ */
+prop.moveTo = function (x = 0, y = 0, z = 0) {
+    // first keep the points diff
+    let pos1 = this.point1.pos;
+    let pos2 = this.point2.pos;
+    let pos3 = this.point3.pos;
+
+    let diff1 = new Vec3(pos1.x - this.centroid.x, pos1.y - this.centroid.y);
+    let diff2 = new Vec3(pos2.x - this.centroid.x, pos2.y - this.centroid.y);
+    let diff3 = new Vec3(pos3.x - this.centroid.x, pos3.y - this.centroid.y);
+
+    this.centroid = new Vec3(x, y, z);
+    let point1 = new Point().set(this.centroid).add(diff1);
+    let point2 = new Point().set(this.centroid).add(diff2);
+    let point3 = new Point().set(this.centroid).add(diff3);
+    // 重新生成一个三角形还是直接在原有数据上增添内容呢， 实际上性能消耗差不多，但是数据存储空间上就差别比较大了
+
+}
+
+prop.moveBy = function (x = 0, y = 0, z = 0) {
+
+}
+
+prop.getCentroid = function (pos1, pos2, pos3) {
+    if (!pos1 || !pos2 || !pos3) {
+        warn(`Triangle getCentroid method failed`);
+        return;
     }
 
-    this.clearTriangleBoundaryCache();
-    return tempPoints;
+    let x = (pos1.x + pos2.x + pos3.x) / 3;
+    let y = (pos1.y + pos2.y + pos3.y) / 3;
+    let z = (pos1.z + pos2.z + pos3.z) / 3;
+    return new Vec3(x, y, z);
 }
 // #endregion
+function isLineCrossed (pos1, pos2, tempPos1, tempPos2, line) {
+    let dx1 = tempPos1.x - pos1.x;
+    let dy1 = tempPos1.y - pos1.y;
 
-// triangle color analy, line use to save the line points
-function analysisColor (point1, point2, point3, line) {
-    let pos1 = point1.pos;
-    let pos2 = point2.pos;
-    let pos3 = point3.pos;
-    for (let i = 0; i < line.length; i++) {
-        let tempPoint = line[i];
-        let pos = line[i].pos;
-        let dir1 = pos1.dir(pos);
-        let dir2 = pos2.dir(pos);
-        let dir3 = pos3.dir(pos);
+    let dx2 = tempPos1.x - pos2.x;
+    let dy2 = tempPos1.y - pos2.y;
 
-        let totalDir = dir1 + dir2 + dir3;
-        let weight1 = dir1 / totalDir;
-        let weight2 = dir2 / totalDir;
-        let weight3 = dir3 / totalDir;
+    let newVector1 = new Vec3(dx1, dy1);
+    let newVector2 = new Vec3(dx2, dy2);
 
-        let color1 = new Color().set(point1.color).multiply(weight1);
-        let color2 = new Color().set(point2.color).multiply(weight2);
-        let color3 = new Color().set(point3.color).multiply(weight3);
+    let d1 = line.cross2D(newVector1);
+    let d2 = line.cross2D(newVector2);
 
-        tempPoint.color =  new Color().set(color1.add(color2.add(color3)));
-    }
+    let dv = new Vec3((pos1.x - pos2.x), (pos1.y - pos2.y));
+    dx1 = pos1.x - tempPos1.x;
+    dy1 = pos1.y - tempPos1.y;
+
+    dx2 = pos1.x - tempPos2.x;
+    dy2 = pos1.y - tempPos2.y;
+
+    newVector1 = new Vec3(dx1, dy1);
+    newVector2 = new Vec3(dx2, dy2);
+    let d3 = dv.cross2D(newVector1);
+    let d4 = dv.cross2D(newVector2);
+
+    if (d1 * d2 < 0 && d3 * d4 < 0) return true;
+    return false;
 }
+
+module.exports = Triangle;
