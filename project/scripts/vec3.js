@@ -60,6 +60,13 @@ prop.cut = function (newVec3) {
         this.z - newVec3.z
     );
 }
+/**
+ * matrix4 {Matrix4}
+ * return new Vec3
+*/
+prop.multiplyMatrix = function (matrix4) {
+    return new Vec3()
+}
 
 Object.defineProperty(Vec3.prototype, 'ZERO', {
     get function () {

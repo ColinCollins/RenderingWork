@@ -16,7 +16,6 @@ function main () {
 
 ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
-    // line 不能使用 depth 检测
     // lineScene(sources);
     // triangleScene(sources);
     // translateScene(sources);
@@ -41,18 +40,25 @@ function translateScene (sources) {
     let pos2 = new Vector3([-100, 0, 0]);
     let pos3 = new Vector3([0, 150, 0]);
 
+
+    let triangle = new Triangle(new Point(pos1, color1), new Point(pos2, color2), new Point(pos3, color3));
     // draw(pos1, pos2, pos3, color1, color2, color3);
-    // not use the depth
-    function translate () {
-        // move
-        // rotate
-        // skew
-        // scale
-        clearCanvas();
-        window.requestAnimationFrame(tranlsate);
+    // not use the depth and this function is update
+    function move () {
+
     }
 
-    translate();
+    function rotate () {
+
+    }
+
+    function skew () {
+
+    }
+
+    function scale () {
+
+    }
 
     function clearCanvas () {
         gl.clear(gl.COLOR_BIT_BUFFER);

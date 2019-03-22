@@ -86,6 +86,7 @@ prop.checkPointInSideTriangle = function (pos) {
 // #region move
 /*
     move prehaps need triangle origin to save the position
+    return a new Triangle with new points
  */
 prop.moveTo = function (x = 0, y = 0, z = 0) {
     // first keep the points diff
@@ -98,15 +99,27 @@ prop.moveTo = function (x = 0, y = 0, z = 0) {
     let diff3 = new Vec3(pos3.x - this.centroid.x, pos3.y - this.centroid.y);
 
     this.centroid = new Vec3(x, y, z);
-    let point1 = new Point().set(this.centroid).add(diff1);
-    let point2 = new Point().set(this.centroid).add(diff2);
-    let point3 = new Point().set(this.centroid).add(diff3);
-    // 重新生成一个三角形还是直接在原有数据上增添内容呢， 实际上性能消耗差不多，但是数据存储空间上就差别比较大了
+    let point1 = new Point(new Vec3().set(this.centroid).add(diff1), this.point1.color);
+    let point2 = new Point(new Vec3().set(this.centroid).add(diff2), this.point2.color);
+    let point3 = new Point(new Vec3().set(this.centroid).add(diff3), this.point3.color);
 
+    return new Triangle(point1, point2, point3);
 }
 
-prop.moveBy = function (x = 0, y = 0, z = 0) {
+prop.moveBy = function (x, y, z) {
+    // first keep the points diff
+    let v3 = new Vec3(x, y, z);
+    let point1 = new Point(new Vec3().set(this.point1.pos).add(v3), this.point1.color);
+    let point2 = new Point(new Vec3().set(this.point2.pos).add(v3), this.point2.color);
+    let point3 = new Point(new Vec3().set(this.point3.pos).add(v3), this.point3.color);
 
+    return new Triangle(point1, point2, point3);
+}
+/**
+ *  return a new triangle
+*/
+prop.multiplyMatrix = function (matrix4) {
+    return new Vec3()
 }
 
 prop.getCentroid = function (pos1, pos2, pos3) {
