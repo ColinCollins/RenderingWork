@@ -119,7 +119,16 @@ prop.moveBy = function (x, y, z) {
  *  return a new triangle
 */
 prop.multiplyMatrix = function (matrix4) {
-    return new Vec3()
+
+    let pos1 = this.point1.pos.multiplyMatrix(matrix4);
+    let pos2 = this.point2.pos.multiplyMatrix(matrix4);
+    let pos3 = this.point3.pos.multiplyMatrix(matrix4);
+
+    let newPoint1 = new Point(pos1, this.point1.color);
+    let newPoint2 = new Point(pos2, this.point2.color);
+    let newPoint3 = new Point(pos3, this.point3.color);
+
+    return new Triangle(newPoint1, newPoint2, newPoint3);
 }
 
 prop.getCentroid = function (pos1, pos2, pos3) {

@@ -65,7 +65,19 @@ prop.cut = function (newVec3) {
  * return new Vec3
 */
 prop.multiplyMatrix = function (matrix4) {
-    return new Vec3()
+    let result = new Vec3();
+    let e = matrix4.elements;
+    result.x = this.x * e[0] + this.y * e[4] + this.z * e[ 8] + e[12];
+    result.y = this.x * e[1] + this.y * e[5] + this.z * e[ 9] + e[13];
+    result.z = this.x * e[2] + this.y * e[6] + this.z * e[10] + e[14];
+    fromat(result);
+    return result;
+}
+
+function fromat (result) {
+    result.x = result.x % 1 > 0.5 ? Math.ceil(result.x) : Math.floor(result.x);
+    result.y = result.y % 1 > 0.5 ? Math.ceil(result.y) : Math.floor(result.y);
+    result.z = result.z % 1 > 0.5 ? Math.ceil(result.z) : Math.floor(result.z);
 }
 
 Object.defineProperty(Vec3.prototype, 'ZERO', {

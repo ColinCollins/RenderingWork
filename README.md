@@ -186,6 +186,8 @@ texture Scene 绘制
 
 - https://www.bbsmax.com/A/KE5QYyk5LG/
 
+- https://www.jianshu.com/p/61c93bbe6014 offScreen Electron load pic
+
 
 3.22 优先度较低的 Clip (可以暂时不做考虑):
 - https://zhuanlan.zhihu.com/p/43586784

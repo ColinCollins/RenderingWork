@@ -105,9 +105,9 @@ Matrix4.prototype.multiplyVector3 = function(pos) {
     var v = new Vector3();
     var result = v.elements;
 
-    result[0] = p[0] * e[0] + p[1] * e[4] + p[2] * e[ 8] + e[11];
-    result[1] = p[0] * e[1] + p[1] * e[5] + p[2] * e[ 9] + e[12];
-    result[2] = p[0] * e[2] + p[1] * e[6] + p[2] * e[10] + e[13];
+    result[0] = p[0] * e[0] + p[1] * e[4] + p[2] * e[ 8] + e[12];
+    result[1] = p[0] * e[1] + p[1] * e[5] + p[2] * e[ 9] + e[13];
+    result[2] = p[0] * e[2] + p[1] * e[6] + p[2] * e[10] + e[14];
 
     return v;
 };
@@ -475,6 +475,22 @@ Matrix4.prototype.translate = function(x, y, z) {
     e[15] += e[3] * x + e[7] * y + e[11] * z;
     return this;
 };
+// set for the special project
+Matrix4.prototype.setShear = function (angle, x, y) {
+    var e = this.elements;
+    let shearX, shearY = 0;
+    if (x === 0 && y === 1) {
+        shearY = Math.tan(Math.PI / 2 - angle);
+    }
+    else if (x === 1 && y === 0) {
+        shearX = Math.tan(angle);
+    }
+    e[0] = 1;  e[4] = shearX;  e[8]  = 0;  e[12] = 0;
+    e[1] = shearY;  e[5] = 1;  e[9]  = 0;  e[13] = 0;
+    e[2] = 0;  e[6] = 0;  e[10] = 1;  e[14] = 0;
+    e[3] = 0;  e[7] = 0;  e[11] = 0;  e[15] = 1;
+    return this;
+}
 
 /**
  * 回転行列に設定する。

@@ -18,7 +18,7 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
     // lineScene(sources);
     // triangleScene(sources);
-    // translateScene(sources);
+     translateScene(sources);
     // textureScene(sources);
     // cubeScene(sources);
     // pointLightScene(sources);
@@ -36,30 +36,31 @@ function translateScene (sources) {
     let color3 = new Color().random;
 
     // setIn
-    let pos1 = new Vector3([100, 0, 0]);
-    let pos2 = new Vector3([-100, 0, 0]);
-    let pos3 = new Vector3([0, 150, 0]);
+    let pos1 = new Vec3(100, 0, 0);
+    let pos2 = new Vec3(-100, 0, 0);
+    let pos3 = new Vec3(0, 150, 0);
 
 
     let triangle = new Triangle(new Point(pos1, color1), new Point(pos2, color2), new Point(pos3, color3));
     // draw(pos1, pos2, pos3, color1, color2, color3);
     // not use the depth and this function is update
-    function move () {
+    let moveMatrix = new Matrix4().setTranslate(300, 0, 0);
+    let rotateMatrix = new Matrix4().setTranslate(0, -150, 0).rotate(40, 0.0, 0.0, 1.0);
+    let shearMatrix = new Matrix4().setShear(Math.PI / 3, 1.0, 0.0);
+    let scaleMatrix = new Matrix4().setTranslate(-300, 0, 0).scale(0.2, 2, 2);
+    // move
+    let moveTriangle = triangle.multiplyMatrix(moveMatrix);
+    utils.trianglesBuffer.push(moveTriangle);
+    // rotate
+    let rotateTriangle = triangle.multiplyMatrix(rotateMatrix);
+    utils.trianglesBuffer.push(rotateTriangle);
 
-    }
+    let shearTriangle = triangle.multiplyMatrix(shearMatrix);
+    utils.trianglesBuffer.push(shearTriangle);
 
-    function rotate () {
-
-    }
-
-    function skew () {
-
-    }
-
-    function scale () {
-
-    }
-
+    let scaleTriangle = triangle.multiplyMatrix(scaleMatrix);
+    utils.trianglesBuffer.push(scaleTriangle);
+    draw();
     function clearCanvas () {
         gl.clear(gl.COLOR_BIT_BUFFER);
         utils.trianglesBuffer = [];

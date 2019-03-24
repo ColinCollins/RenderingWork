@@ -119,7 +119,7 @@ exports.inputDataArrayBuffer = function () {
             for (let k = 0; k < points.length; k++) {
                 let point = points[k];
                 // 临时的 clip 处理
-                if (point.dropByDepth || isContain(point.pos)) continue;
+                if (point.dropByDepth || !isContain(point.pos)) continue;
                 this.arrayBuffer.push(point);
             }
         }
