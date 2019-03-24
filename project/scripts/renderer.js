@@ -18,11 +18,19 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
     // lineScene(sources);
     // triangleScene(sources);
-     translateScene(sources);
-    // textureScene(sources);
+    // translateScene(sources);
+     textureScene(sources);
     // cubeScene(sources);
     // pointLightScene(sources);
 });
+// #region texture
+
+function textureScene (sources) {
+    InitScene(sources);
+    
+}
+
+// #endregion
 
 // #region translate
 /*

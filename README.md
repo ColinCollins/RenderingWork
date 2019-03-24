@@ -188,6 +188,9 @@ texture Scene 绘制
 
 - https://www.jianshu.com/p/61c93bbe6014 offScreen Electron load pic
 
+- https://www.lihuasoft.net/article/show.php?id=4509 texture and mipmap
+
+- https://blog.csdn.net/jiangtao_killer/article/details/7495473 filter 解释
 
 3.22 优先度较低的 Clip (可以暂时不做考虑):
 - https://zhuanlan.zhihu.com/p/43586784
