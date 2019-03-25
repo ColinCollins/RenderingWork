@@ -117,12 +117,13 @@ prop.moveBy = function (x, y, z) {
 }
 /**
  *  return a new triangle
+ *  flag 用来记录传入的数据是否是单位数据
 */
-prop.multiplyMatrix = function (matrix4) {
+prop.multiplyMatrix = function (matrix4, flag = false) {
 
-    let pos1 = this.point1.pos.multiplyMatrix(matrix4);
-    let pos2 = this.point2.pos.multiplyMatrix(matrix4);
-    let pos3 = this.point3.pos.multiplyMatrix(matrix4);
+    let pos1 = this.point1.pos.multiplyMatrix(matrix4, flag);
+    let pos2 = this.point2.pos.multiplyMatrix(matrix4, flag);
+    let pos3 = this.point3.pos.multiplyMatrix(matrix4, flag);
 
     let newPoint1 = new Point(pos1, this.point1.color);
     let newPoint2 = new Point(pos2, this.point2.color);

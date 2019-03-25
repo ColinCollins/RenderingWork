@@ -7,6 +7,7 @@ const Program = require('./program');
 const utils = require('./utils');
 const drawMain = require('./drawMain');
 const drawLines = require('./drawLines');
+const Data = require('../lib/data');
 
 main();
 
@@ -19,15 +20,40 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // lineScene(sources);
     // triangleScene(sources);
     // translateScene(sources);
-     textureScene(sources);
-    // cubeScene(sources);
+    // textureScene(sources);
+     cubeScene(sources);
     // pointLightScene(sources);
 });
+
+// #region cube
+
+function cubeScene (sources) {
+    InitScene(sources);
+    utils.isDepth = true;
+    let mvpMatrix = new Matrix4().setPerspective(50.0, canvasWidth / canvasHeight, 1, 100);
+    mvpMatrix.lookAt(
+        0.0, 2.0, 10.0,
+        0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0
+    );
+
+    let modelMatrix = new Matrix4().setRotate(30.0, 0.0, 1.0, 0.0);
+    mvpMatrix.multiply(modelMatrix);
+
+    let cube = new Cube(Data.initIndexData(), Data.initVerticesData(), Data.initColorData(), Data.initNormalizeData(), [], true, mvpMatrix);
+    utils.trianglesBuffer = utils.trianglesBuffer.concat(cube.normalCubeTriangles());
+    draw();
+
+}
+
+// #endregion
+
+
 // #region texture
 
 function textureScene (sources) {
     InitScene(sources);
-    
+
 }
 
 // #endregion

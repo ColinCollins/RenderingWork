@@ -111,7 +111,7 @@ void matrix_sub(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 			c->m[i][j] = a->m[i][j] - b->m[i][j];
 	}
 }
-
+// c -> result, a -> vector4, b -> projectMatrix
 // c = a * b
 void matrix_mul(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 	matrix_t z;
@@ -124,6 +124,7 @@ void matrix_mul(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 						(a->m[j][3] * b->m[3][i]);
 		}
 	}
+	// c -> ? z
 	c[0] = z;
 }
 
@@ -681,7 +682,7 @@ void device_draw_primitive(device_t *device, const vertex_t *v1,
 	if (transform_check_cvv(&c2) != 0) return;
 	if (transform_check_cvv(&c3) != 0) return;
 
-	// 归一化
+	// 归一化 ?? 为了给 uv 坐标
 	transform_homogenize(&device->transform, &p1, &c1);
 	transform_homogenize(&device->transform, &p2, &c2);
 	transform_homogenize(&device->transform, &p3, &c3);

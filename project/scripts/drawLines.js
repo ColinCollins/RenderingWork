@@ -10,25 +10,32 @@ exports.BresenhamLine = function (point1, point2) {
     tempPoints.push(point1);
     tempPoints.push(point2);
 
+    let dz = pos1.z - pos2.z;
     let dir = point1.pos.dir(point2.pos);
     if (pos1.x === pos2.x && pos1.y !== pos2.y) {
         let x = pos1.x;
         let dy = Math.max((pos2.y - pos1.y), (pos1.y - pos2.y));
         let startY = Math.min(pos1.y, pos2.y);
+        let startZ = startY === pos1.y ? pos1.z : pos2.z;
+        let Zstep = dz / dy * 10;
 
         for (let i = 1; i < dy; i++) {
             let y = startY + i;
-            tempPoints.push(createPoint(x, y, dir, point1, point2));
+            let z = Zstep * i % 1 > 0.5 ? Math.floor(startZ + Zstep * i) : Math.ceil(startZ + Zstep * i);
+            tempPoints.push(createPoint(x, y, z, dir, point1, point2));
         }
     }
     else if (pos1.y === pos2.y && pos1.x !== pos2.x) {
         let y = pos1.y;
         let dx = Math.max((pos2.x - pos1.x), (pos1.x - pos2.x));
         let startX = Math.min(pos1.x, pos2.x);
+        let startZ = startX === pos1.x ? pos1.z : pos2.z;
+        let Zstep = dz / dx * 10;
 
         for (let i = 1; i < dx; i++) {
             let x = startX + i;
-            tempPoints.push(createPoint(x, y, dir, point1, point2));
+            let z = Zstep * i % 1 > 0.5 ? Math.floor(startZ + Zstep * i) : Math.ceil(startZ + Zstep * i);
+            tempPoints.push(createPoint(x, y, z, dir, point1, point2));
         }
     }
     else {
@@ -41,25 +48,44 @@ exports.BresenhamLine = function (point1, point2) {
         if (Math.abs(dx) < Math.abs(dy)) {
             // from left to right
             let sym = rate < 0 ? -1 : 1;
-            if (rate > 0) {
-                startPos = pos1.y < pos2.y ? pos1 : pos2;
+            let dz, Zstep, startZ = 0;
+            if (rate > 0 && pos1.y < pos2.y || rate <0 && pos1.y > pos2.y) {
+                startPos = pos1;
+                startZ = pos1.z;
+                dz = pos1.z - pos2.z;
             }
             else {
-                startPos = pos1.y > pos2.y ? pos1 : pos2;
+                startPos = pos2;
+                startZ = pos2.z;
+                dz = pos2.z - pos1.z;
             }
+            Zstep = dz / Math.abs(dy) * 10;
+
             let curX = startPos.x;
             for (let i = 1; i < Math.abs(dy); i++) {
                 let y = startPos.y + sym * i;
                 let curRate = i / (curX - startPos.x);
+                let z = Zstep * i % 1 > 0.5 ? Math.ceil(startZ + Zstep * i) : Math.floor(startZ + Zstep * i);
                 if (Math.abs(curRate) > Math.abs(rate)) {
                     curX += 1;
                 }
-                tempPoints.push(createPoint(curX, y, dir, point1, point2));
+                tempPoints.push(createPoint(curX, y, z, dir, point1, point2));
             }
         }
         else {
             // from left to right
             startPos = pos1.x < pos2.x ? pos1 : pos2;
+            let dz, Zstep, startZ = 0;
+            if (startPos.equal(pos1)) {
+                dz = pos1.z - pos2.z;
+                startZ = pos1.z;
+            }
+            else {
+                dz = pos2.z - pos1.z;
+                startZ = pos2.z;
+            }
+            Zstep = dz / Math.abs(dx) * 10;
+
             let curY = startPos.y;
             for (let i = 1; i < Math.abs(dx); i++) {
                 let x = startPos.x + i;
@@ -67,7 +93,8 @@ exports.BresenhamLine = function (point1, point2) {
                 if (Math.abs(curRate) < Math.abs(rate)) {
                     curY += rate < 0 ? -1 : 1;
                 }
-                tempPoints.push(createPoint(x, curY, dir, point1, point2));
+                let z = Zstep * i % 1 > 0.5 ? Math.ceil(startZ + Zstep * i) : Math.floor(startZ + Zstep * i);
+                tempPoints.push(createPoint(x, curY, z, dir, point1, point2));
             }
         }
     }
@@ -105,8 +132,8 @@ exports.CohenSutherland = function (point1, point2) {
     }
 }
 
-function createPoint(x, y, totalDir, point1, point2) {
-    let tempPos = new Vec3(x, y);
+function createPoint(x, y, z, totalDir, point1, point2) {
+    let tempPos = new Vec3(x, y, z);
     let tempColor = analysisColor(tempPos, totalDir, point1, point2);
     let tempPoint = new Point(tempPos, tempColor);
     return tempPoint;

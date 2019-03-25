@@ -192,6 +192,8 @@ texture Scene 绘制
 
 - https://blog.csdn.net/jiangtao_killer/article/details/7495473 filter 解释
 
+- https://webglfundamentals.org/webgl/lessons/zh_cn/webgl-3d-perspective-correct-texturemapping.html webgl 关于纹理透视矫正
+
 3.22 优先度较低的 Clip (可以暂时不做考虑):
 - https://zhuanlan.zhihu.com/p/43586784
 
@@ -200,6 +202,30 @@ deadLine:
 3.23: translate
 3.23 texture nearst 差值， linear 差值计算，要求从 engine 上面参考
 
+实际上我们渲染 cube 似乎是不一定非要考虑 mipmap 的。因为直接渲染并没有错误。 仿射变换也成功了，那么做一个 element 的计算就应该没问题了。
+
+需要纹理绘制的话在采取特殊的手段，比如特定尺寸的 cube 以及 texture 素材。
+
 3.24: cube
-3.24： textureCube
-3.25: pointLight? (暂定)
+
+透视矩阵的计算还不完整，需要优化，同时还有 clip 多余的物体剪裁。
+CVV -> Canonical view volume （规范视图量）
+
+- http://www.cnblogs.com/mikewolf2002/archive/2012/11/25/2787265.html 透视剪裁参考 ！！ important
+
+w 在投影矩阵最后获取的 w 作用是获得了标准显示范围下的 x,y,z 的区间，超出区间的点被视为在图形之外不予绘制。
+
+
+绘制 cube 就需要纹理透视矫正，因为 triangle 一直是二维的绘制手段加入了 z 的检测之后也没有变为真正的三维空间。
+
+3.24：textureCube
+
+3.25:
+涉及到一个部分的改动，首先明确一点，当前的渲染单位应该是以 width 和 height 来决定的，那么我们需要在传入以 [-1, 1] 的范围的对象式考虑如何转换为我们需要的 viewport 坐标。
+还有一点，根据我们参考的 《webgl 编程指南》提供的 matrix4 方法库，我们可以知道整个库是不够全面的，至少是不够完美的，这个库中提供的算法是基于书中案例需求设计的，当时实际使用比如：
+透视投影矩阵的时候，需要考虑根据书中案例所设计的限定，比如：
+1. 案例中的 cube 数据单位是 [-1, 1]。
+2. 案例中的 cube 一直都是相同的顶点数据，具体的绘制位置变换都是通过 affine-translate 获得的。这也是在 fog 那一节的时候产生了十分严重的违和感的原因之一，数据的固定化。
+既然我们借用了第三方的数据计算库，理所当然的需要在自己的代码中添加响应的适配方案。
+
+在增添了 Vec3 关于 z-index 的考虑之后 Line 的绘制也需要进行变动，需要增加 z-index 部分相关的计算。

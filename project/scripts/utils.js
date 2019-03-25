@@ -11,7 +11,7 @@ exports.bindArrayBuffer = function (gl, proxy) {
         // add the z-index test method
         vertexArray.push(point.x / (canvasWidth / 2));
         vertexArray.push(point.y / (canvasHeight / 2));
-        vertexArray.push(point.z);
+        vertexArray.push(point.z / 100);
         let color = points[i].color;
         colorArray.push(color.r / 255.0);
         colorArray.push(color.g / 255.0);
