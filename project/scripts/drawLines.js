@@ -10,31 +10,46 @@ exports.BresenhamLine = function (point1, point2) {
     tempPoints.push(point1);
     tempPoints.push(point2);
 
-    let dz = pos1.z - pos2.z;
     let dir = point1.pos.dir(point2.pos);
     if (pos1.x === pos2.x && pos1.y !== pos2.y) {
         let x = pos1.x;
         let dy = Math.max((pos2.y - pos1.y), (pos1.y - pos2.y));
-        let startY = Math.min(pos1.y, pos2.y);
-        let startZ = startY === pos1.y ? pos1.z : pos2.z;
-        let Zstep = dz / dy * 10;
+        let startY, startZ, stepZ = 0
+        if (pos1.y < pos2.y) {
+            startY = pos1.y;
+            startZ = pos1.z;
+            stepZ = pos1.z < pos2.z ? 0.01 : -0.01;
+        }
+        else {
+            startY = pos2.y;
+            startZ = pos2.z;
+            stepZ = pos1.z < pos2.z ? -0.01 : 0.01;
+        }
 
         for (let i = 1; i < dy; i++) {
             let y = startY + i;
-            let z = Zstep * i % 1 > 0.5 ? Math.floor(startZ + Zstep * i) : Math.ceil(startZ + Zstep * i);
+            let z = startZ + stepZ * i;
             tempPoints.push(createPoint(x, y, z, dir, point1, point2));
         }
     }
     else if (pos1.y === pos2.y && pos1.x !== pos2.x) {
         let y = pos1.y;
         let dx = Math.max((pos2.x - pos1.x), (pos1.x - pos2.x));
-        let startX = Math.min(pos1.x, pos2.x);
-        let startZ = startX === pos1.x ? pos1.z : pos2.z;
-        let Zstep = dz / dx * 10;
+        let startX, startZ, stepZ = 0
+        if (pos1.x < pos2.x) {
+            startX = pos1.x;
+            startZ = pos1.z;
+            stepZ = pos1.z < pos2.z ? 0.01 : -0.01;
+        }
+        else {
+            startX = pos2.x;
+            startZ = pos2.z;
+            stepZ = pos1.z < pos2.z ? -0.01 : 0.01;
+        }
 
         for (let i = 1; i < dx; i++) {
             let x = startX + i;
-            let z = Zstep * i % 1 > 0.5 ? Math.floor(startZ + Zstep * i) : Math.ceil(startZ + Zstep * i);
+            let z = startZ + stepZ * i;
             tempPoints.push(createPoint(x, y, z, dir, point1, point2));
         }
     }
@@ -48,24 +63,23 @@ exports.BresenhamLine = function (point1, point2) {
         if (Math.abs(dx) < Math.abs(dy)) {
             // from left to right
             let sym = rate < 0 ? -1 : 1;
-            let dz, Zstep, startZ = 0;
-            if (rate > 0 && pos1.y < pos2.y || rate <0 && pos1.y > pos2.y) {
+            let stepZ, startZ = 0;
+            if (rate > 0 && pos1.y < pos2.y || rate < 0 && pos1.y > pos2.y) {
                 startPos = pos1;
                 startZ = pos1.z;
-                dz = pos1.z - pos2.z;
+                stepZ = pos1.z < pos2.z ? 0.01 : -0.01;
             }
             else {
                 startPos = pos2;
                 startZ = pos2.z;
-                dz = pos2.z - pos1.z;
+                stepZ = pos1.z < pos2.z ? -0.01 : 0.01;
             }
-            Zstep = dz / Math.abs(dy) * 10;
 
             let curX = startPos.x;
             for (let i = 1; i < Math.abs(dy); i++) {
                 let y = startPos.y + sym * i;
                 let curRate = i / (curX - startPos.x);
-                let z = Zstep * i % 1 > 0.5 ? Math.ceil(startZ + Zstep * i) : Math.floor(startZ + Zstep * i);
+                let z = startZ + stepZ * i;
                 if (Math.abs(curRate) > Math.abs(rate)) {
                     curX += 1;
                 }
@@ -75,25 +89,24 @@ exports.BresenhamLine = function (point1, point2) {
         else {
             // from left to right
             startPos = pos1.x < pos2.x ? pos1 : pos2;
-            let dz, Zstep, startZ = 0;
+            let stepZ, startZ = 0;
             if (startPos.equal(pos1)) {
-                dz = pos1.z - pos2.z;
                 startZ = pos1.z;
+                stepZ = pos1.z < pos2.z ? 0.01 : -0.01;
             }
             else {
-                dz = pos2.z - pos1.z;
                 startZ = pos2.z;
+                stepZ = pos1.z < pos2.z ? -0.01 : 0.01;
             }
-            Zstep = dz / Math.abs(dx) * 10;
 
             let curY = startPos.y;
             for (let i = 1; i < Math.abs(dx); i++) {
                 let x = startPos.x + i;
                 let curRate = (curY - startPos.y) / i;
+                let z = startZ + stepZ * i;
                 if (Math.abs(curRate) < Math.abs(rate)) {
                     curY += rate < 0 ? -1 : 1;
                 }
-                let z = Zstep * i % 1 > 0.5 ? Math.ceil(startZ + Zstep * i) : Math.floor(startZ + Zstep * i);
                 tempPoints.push(createPoint(x, curY, z, dir, point1, point2));
             }
         }
@@ -133,6 +146,9 @@ exports.CohenSutherland = function (point1, point2) {
 }
 
 function createPoint(x, y, z, totalDir, point1, point2) {
+
+    if (point1.pos.z === point2.pos.z) z = point1.pos.z;
+
     let tempPos = new Vec3(x, y, z);
     let tempColor = analysisColor(tempPos, totalDir, point1, point2);
     let tempPoint = new Point(tempPos, tempColor);

@@ -57,7 +57,7 @@ prop.checkLinesCross = function (pos1, pos2) {
         isLineCrossed(pos1, pos2, tempPos2, tempPos3, this.lineVector2) ||
         isLineCrossed(pos1, pos2, tempPos3, tempPos1, this.lineVector3)
     ) {
-        log(`checkLinesCross: isContained.`);
+        //log(`checkLinesCross: isContained.`);
         return true;
     }
 
@@ -141,7 +141,7 @@ prop.getCentroid = function (pos1, pos2, pos3) {
     let x = (pos1.x + pos2.x + pos3.x) / 3;
     let y = (pos1.y + pos2.y + pos3.y) / 3;
     let z = (pos1.z + pos2.z + pos3.z) / 3;
-    return new Vec3(x, y, z);
+    return new Vec3(ownParseInt(x), ownParseInt(y), ownParseInt(z));
 }
 // #endregion
 function isLineCrossed (pos1, pos2, tempPos1, tempPos2, line) {

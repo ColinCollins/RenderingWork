@@ -33,16 +33,16 @@ function createCircle (pos, radius) {
         let cos = Math.cos(theta).toFixed(3);
         let sin = Math.sin(theta).toFixed(3);
         log(`Cos = ${cos} Sin = ${sin}`);
-        let x = cos * radius % 1 > 0.5 ? Math.floor(cos * radius + pos.x) : Math.ceil(cos * radius + pos.x);
-        let y = sin * radius % 1 > 0.5 ? Math.floor(sin * radius + pos.y) : Math.ceil(sin * radius + pos.y);
+        let x = ownParseInt((cos * radius), (cos * radius + pos.x));
+        let y = ownParseInt((sin * radius), (sin * radius + pos.y));
         let pos1 = new Vec3(x, y);
         // next pos
         theta = Math.PI * 2 * (i + 1) / n;
         cos = Math.cos(theta).toFixed(3);
         sin = Math.sin(theta).toFixed(3);
         log(`Cos = ${cos} Sin = ${sin}`);
-        x = cos * radius % 1 > 0.5 ? Math.floor(cos * radius + pos.x) : Math.ceil(cos * radius + pos.x);
-        y = sin * radius % 1 > 0.5 ? Math.floor(sin * radius + pos.y) : Math.ceil(sin * radius + pos.y);
+        x = ownParseInt((cos * radius), (cos * radius + pos.x));
+        y = ownParseInt((sin * radius), (sin * radius + pos.y));
         let pos2 = new Vec3(x, y);
         // color
         let red = 0;

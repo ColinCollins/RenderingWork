@@ -37,7 +37,7 @@ function cubeScene (sources) {
         0.0, 1.0, 0.0
     );
 
-    let modelMatrix = new Matrix4().setRotate(30.0, 0.0, 1.0, 0.0);
+    let modelMatrix = new Matrix4().setRotate(0.0, 0.0, 1.0, 0.0);
     mvpMatrix.multiply(modelMatrix);
 
     let cube = new Cube(Data.initIndexData(), Data.initVerticesData(), Data.initColorData(), Data.initNormalizeData(), [], true, mvpMatrix);
