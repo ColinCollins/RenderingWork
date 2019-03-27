@@ -1,5 +1,3 @@
-const utils = require('./utils');
-
 exports.line1 = [];
 exports.line2 = [];
 exports.line3 = [];

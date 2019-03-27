@@ -1,4 +1,6 @@
-function Triangle (point1, point2, point3) {
+const utils = require('./utils');
+
+function Triangle (point1, point2, point3, mvpMatrix, modelMatrix) {
     this.point1 = point1;
     this.point2 = point2;
     this.point3 = point3;
@@ -18,6 +20,9 @@ function Triangle (point1, point2, point3) {
     this.lineVector1 = new Vec3(dx1, dy1);
     this.lineVector2 = new Vec3(dx2, dy2);
     this.lineVector3 = new Vec3(dx3, dy3);
+    // depth test
+    this.mvpMatrix = mvpMatrix;
+    this.modelMatrix= modelMatrix;
 
     // 质心
     this.centroid = this.getCentroid(pos1, pos2, pos3);
@@ -119,11 +124,32 @@ prop.moveBy = function (x, y, z) {
  *  return a new triangle
  *  flag 用来记录传入的数据是否是单位数据
 */
-prop.multiplyMatrix = function (matrix4, flag = false) {
+prop.multiplyMatrix = function (matrix4) {
+    let pos1 = this.point1.pos.multiplyMatrix(matrix4);
+    let pos2 = this.point2.pos.multiplyMatrix(matrix4);
+    let pos3 = this.point3.pos.multiplyMatrix(matrix4);
 
-    let pos1 = this.point1.pos.multiplyMatrix(matrix4, flag);
-    let pos2 = this.point2.pos.multiplyMatrix(matrix4, flag);
-    let pos3 = this.point3.pos.multiplyMatrix(matrix4, flag);
+    let newPoint1 = new Point(pos1, this.point1.color);
+    let newPoint2 = new Point(pos2, this.point2.color);
+    let newPoint3 = new Point(pos3, this.point3.color);
+
+    return new Triangle(newPoint1, newPoint2, newPoint3);
+}
+
+// 这里我们新添加一个深度检测的方法，以为是后序的修正因此不对原代码结构进行修改
+prop.depthBufferTest = function () {
+    if (!utils.isDepth || !this.mvpMatrix || !this.modelMatrix) return;
+    let pos1 = this.point1.pos.multiplyMatrix(this.mvpMatrix);
+    let pos2 = this.point2.pos.multiplyMatrix(this.mvpMatrix);
+    let pos3 = this.point3.pos.multiplyMatrix(this.mvpMatrix);
+
+    pos1.z = this.point1.pos.multiplyMatrix(this.modelMatrix).z;
+    pos2.z = this.point2.pos.multiplyMatrix(this.modelMatrix).z;
+    pos3.z = this.point3.pos.multiplyMatrix(this.modelMatrix).z;
+
+    pos1.format();
+    pos2.format();
+    pos3.format();
 
     let newPoint1 = new Point(pos1, this.point1.color);
     let newPoint2 = new Point(pos2, this.point2.color);

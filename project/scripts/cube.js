@@ -2,13 +2,13 @@
 /**
  * sideLength {int} must large than 0
 */
-function Cube (indices, vertexData, colorData, normalData, uvVertexData, flag, mvpMatrix) {
+function Cube (indices, vertexData, colorData, normalData, uvVertexData, mvpMatrix, modelMatrix) {
     this.indices = indices;
     this.colorData = colorData;
     this.normalData = normalData;
     this.uvVertexData = uvVertexData;
-    this.flag = flag;
     this.mvpMatrix = mvpMatrix;
+    this.modelMatrix = modelMatrix;
     this.vertexData = vertexData;
 }
 
@@ -30,14 +30,14 @@ prop.normalCubeTriangles = function () {
         points.push(new Point(new Vec3(pos1, pos2, pos3), new Color(color1, color2, color3)));
     }
 
-    for (let i = 0; i < 12; i += 3) {
+    for (let i = 0; i < this.indices.length; i += 3) {
         let point1 = points[this.indices[i]];
         let point2 = points[this.indices[i + 1]];
         let point3 = points[this.indices[i + 2]];
 
         if (i % 6 === 0) log(`new Triangle:`);
-
-        triangles.push(new Triangle(point1, point2, point3).multiplyMatrix(this.mvpMatrix, this.flag));
+        let triangle = new Triangle(point1, point2, point3, this.mvpMatrix, this.modelMatrix);
+        triangles.push(triangle.depthBufferTest());
     }
     return triangles;
 }

@@ -11,7 +11,7 @@ exports.bindArrayBuffer = function (gl, proxy) {
         // add the z-index test method
         vertexArray.push(point.x / (canvasWidth / 2.0));
         vertexArray.push(point.y / (canvasHeight / 2.0));
-        vertexArray.push(point.z / 1000.0);
+        vertexArray.push(point.z / 100.0);
         let color = points[i].color;
         colorArray.push(color.r / 255.0);
         colorArray.push(color.g / 255.0);
@@ -87,7 +87,7 @@ exports.pushDepthBuffer = function (triangleBuffer, index) {
                 for (let k = 0; k < pointsData.length; k++) { 
                     let pos2 = pointsData[k].pos; 
                     if (pos1.x === pos2.x && pos1.y === pos2.y) { 
-                        if (pos1.z <= pos2.z) { 
+                        if (pos1.z > pos2.z) { 
                             pointsData[k].dropByDepth = true; 
                             break; 
                         } 
@@ -148,4 +148,39 @@ function initPixelArea () {
 window.ownParseInt = function (judge, value) {
     if (!value) value = judge;
     return Math.round(value);
+}
+
+
+window.accMul = function (arg1, arg2) {
+    var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
+    try {
+        m += s1.split(".")[1].length;
+    }
+    catch (e) {
+    }
+    try {
+        m += s2.split(".")[1].length;
+    }
+    catch (e) {
+    }
+    return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
+}
+
+window.accDiv = function (arg1, arg2) {
+    var t1 = 0, t2 = 0, r1, r2;
+    try {
+        t1 = arg1.toString().split(".")[1].length;
+    }
+    catch (e) {
+    }
+    try {
+        t2 = arg2.toString().split(".")[1].length;
+    }
+    catch (e) {
+    }
+    with (Math) {
+        r1 = Number(arg1.toString().replace(".", ""));
+        r2 = Number(arg2.toString().replace(".", ""));
+        return (r1 / r2) * pow(10, t2 - t1);
+    }
 }
