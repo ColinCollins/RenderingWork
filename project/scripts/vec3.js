@@ -93,7 +93,7 @@ prop.format = function () {
 
     this.x = ownParseInt(this.x, value1);
     this.y = ownParseInt(this.y, value2);
-    this.z = this.z * 100.0;
+    this.z = this.z * 10.0;
 
     log(`result: ${this.x} : ${this.y} : ${this.z}`);
 }

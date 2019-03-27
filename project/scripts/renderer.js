@@ -32,17 +32,44 @@ function cubeScene (sources) {
     utils.isDepth = true;
     let mvpMatrix = new Matrix4().setPerspective(50.0, canvasWidth / canvasHeight, 1, 100);
     mvpMatrix.lookAt(
-        0.0, 2.0, 10.0,
+        0.0, 2.0, 3.0,
         0.0, 0.0, 0.0,
         0.0, 1.0, 0.0
     );
 
-    let modelMatrix = new Matrix4().setRotate(0.0, 0.0, 1.0, 0.0);
+    let modelMatrix = new Matrix4().setRotate(50.0, 0.0, 1.0, 0.0).scale(0.6, 0.6, 0.6);
     mvpMatrix.multiply(modelMatrix);
 
-    let cube = new Cube(Data.initIndexData(), Data.initVerticesData(), Data.initColorData(), Data.initNormalizeData(), [], mvpMatrix, modelMatrix);
+    /* let cube = new Cube(Data.initIndexData(), Data.initVerticesData(), Data.initColorData(), Data.initNormalizeData(), [], mvpMatrix, modelMatrix);
     utils.trianglesBuffer = utils.trianglesBuffer.concat(cube.normalCubeTriangles());
-    draw();
+    draw(); */
+
+    let angle = 0.0;
+    let lastDate = new Date();
+    let angleStep = 10.0;
+    function tick () {
+        angle = getAngle(angle);
+        utils.clearCanvas();
+        let modelMatrix = new Matrix4().setRotate(angle, 1.0, 1.0, 1.0).scale(0.6, 0.6, 0.6);
+        let tempMatrix = new Matrix4().set(mvpMatrix);
+        tempMatrix.multiply(modelMatrix);
+
+        let cube = new Cube(Data.initIndexData(), Data.initVerticesData(), Data.initColorData(), Data.initNormalizeData(), [], tempMatrix, modelMatrix);
+        utils.trianglesBuffer = utils.trianglesBuffer.concat(cube.normalCubeTriangles());
+        draw();
+
+        window.requestAnimationFrame(tick);
+    }
+
+     function getAngle (angle) {
+        let now = new Date();
+        let elapse = now - lastDate;
+        lastDate = now;
+        let newAngle = angle + (angleStep * elapse) / 1000.0;
+        return newAngle % 360;
+    }
+
+    tick();
 
 }
 
@@ -273,17 +300,3 @@ function getUniformProp (gl, program, name) {
     }
     return prop;
 }
-
-/* animate rotate
-exports.initRotation = function (step) {
-    this.angleStep = step;
-    this.data = new Date();
-}
-
-exports.rotate = function (angle) {
-    let now = new Date();
-    let elapse = now - this.data;
-    this.data = now;
-    let newAngle = angle + (this.angleStep * elapse) / 1000.0;
-    return newAngle % 360;
-} */

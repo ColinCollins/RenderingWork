@@ -35,7 +35,7 @@ prop.normalCubeTriangles = function () {
         let point2 = points[this.indices[i + 1]];
         let point3 = points[this.indices[i + 2]];
 
-        if (i % 6 === 0) log(`new Triangle:`);
+        // if (i % 6 === 0) log(`new Triangle: ${i / 6}`);
         let triangle = new Triangle(point1, point2, point3, this.mvpMatrix, this.modelMatrix);
         triangles.push(triangle.depthBufferTest());
     }
