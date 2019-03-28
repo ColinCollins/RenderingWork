@@ -6,9 +6,9 @@ const fs = require('fs');
 
 require('electron-reload')(__dirname);
 
-app.on('ready', mainWindow.createMainWindow)
+app.on('ready', mainWindow.createMainWindow);
 
-ipcMain.on('Init-success', (e) => {
+ipcMain.on('init-success', (e) => {
     let vshaderSource = fs.readFileSync(`${__dirname}/project/glsl/vertexShader.glsl`, { encoding: 'utf8' });
     let fshaderSource = fs.readFileSync(`${__dirname}/project/glsl/fragmentShader.glsl`, { encoding: 'utf8' });
 

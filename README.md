@@ -184,9 +184,7 @@ texture Scene 绘制
 
 - 方案参考： https://www.bbsmax.com/A/qVdeYvn1dP/
 
-- https://www.bbsmax.com/A/KE5QYyk5LG/
-
-- https://www.jianshu.com/p/61c93bbe6014 offScreen Electron load pic
+- https://www.bbsmax.com/A/KE5QYyk5LG/ mipmap
 
 - https://www.lihuasoft.net/article/show.php?id=4509 texture and mipmap
 
@@ -211,14 +209,16 @@ deadLine:
 透视矩阵的计算还不完整，需要优化，同时还有 clip 多余的物体剪裁。
 CVV -> Canonical view volume （规范视图量）
 
-- http://www.cnblogs.com/mikewolf2002/archive/2012/11/25/2787265.html 透视剪裁参考 ！！ important
+- https://blog.csdn.net/popy007/article/details/1797121 透视剪裁参考 ！！ important
+
+- http://www.songho.ca/opengl/gl_projectionmatrix.html 关于 z [-1, 1]
+
+- https://www.cnblogs.com/murongxiaopifu/p/6920641.html 包含一个 z-index 最后计算出来是个伪深度的解释，有点东西
 
 w 在投影矩阵最后获取的 w 作用是获得了标准显示范围下的 x,y,z 的区间，超出区间的点被视为在图形之外不予绘制。
 
 
 绘制 cube 就需要纹理透视矫正，因为 triangle 一直是二维的绘制手段加入了 z 的检测之后也没有变为真正的三维空间。
-
-3.24：textureCube
 
 3.25:
 涉及到一个部分的改动，首先明确一点，当前的渲染单位应该是以 width 和 height 来决定的，那么我们需要在传入以 [-1, 1] 的范围的对象式考虑如何转换为我们需要的 viewport 坐标。
@@ -238,3 +238,35 @@ z-index 应该使用真实数值。
 
 还是 drawLine 的问题，按照区间计算是不存在大于 [-100, 100] 的对象的。
 如果这个方法不行，就采用逐点计算，根据传入 x, y 通过线性公式计算伪深度: z -> (a * z + b) / -z 
+
+3.27:
+texture 读取 pixel 渲染
+顺序应先完成 texture 的二维渲染，还是应该考虑到纹理映射问题
+https://blog.csdn.net/wangdingqiaoit/article/details/51457675 - 关于 filter 较详细讲解
+
+http://blog.atelier39.org/cg/555.html  透视纹理映射系列文章
+完成 mipmap 的生成，（填充方案）
+
+2D 渲染相对于 3D 渲染简单在深度的渲染计算。
+2D 没有关于深度的概念，因此渲染内容往往只是放在平面上来思考
+3D 增加了大量关于深度计算三维转换为二维的计算，因此需要考虑的部分更多。
+查看了不少相关的资料，目前我的思维还大致停留在二维的思想阶段上，因为可能比较少的计算更好理解，当涉及到三维的计算时，设计程序的方向就变得更加的复杂。
+这个阶段我希望整理一下关于三维物体渲染的流程，在不考虑光照的影响下，以绘制一个 cube 包含 texture 为例：
+1. 确认顶点，确认当前 cube 的 12 个顶点以及 12 个 triangle。
+2. 投影矩阵变换顶点数据坐标。
+在第二步，以透视投影矩阵为例，透视投影中考虑了数据位点投影到 near 平面上最后生成的点信息。同时随着公式的不断完善，透视投影矩阵包含了更多的信息数据。
+在 cube 场景中，有一处处理失误的地方在于透视投影的数据因为和仿射变换矩阵相乘s导致最后的 w 数据变得错误，存储了错误的信息。由链接：http://www.songho.ca/opengl/gl_projectionmatrix.html 中我们可以获悉在齐次坐标的投影矩阵数据下 w 最终应该存储 -z 原深度信息作为最终计算时的参考。
+为什么 az + b / -z 作为 z 的线性关系呢？
+__我们保留 -z 数据就足够了，但是为了配合 CVV 的剪裁计算，因此需要单位化 z 对象。那么 az + b 实际上应该是为了归一化。__ 最后留得三个对象的线性公式为：透视投影的公式。这是一种推到方式。下面还有另一种推到方式，结合来看效果更佳。
+链接：http://www.cnblogs.com/mikewolf2002/archive/2012/11/25/2787265.html
+给了部分解释，这也是我在重写深度检测是意识到的问题，投影过后的 x, y 信息与 z 不具备对应的线性关系，而解释中正好发现 x, y 与 1 / z 有线性关系，归功于相似三角形，那么根据这两个·特性，在一开始获取了 x, y 与 z 的关系之后，再推到 z 数据关系。 深度数据应该是以 [-1, 1] 为区间，但是我在计算的时候是按照 [0, 1] 的思路计算的，这是错误的，至少从单位上来看是错误的。
+
+接下里考虑矩阵相乘问题，通过参考韦易笑工程，可以得知 update_tranfrom 在创建 box 之前，那意味着矩阵相乘之后的变化不影响 CVV 的检测，可以得知矩阵之间对于变量的影响是相对独立的，虽然数值上有偏差但是综合矩阵并不会改变最后的数据对应结论。
+
+3. 填充变换过后的三角形像素数据, 最中转换为屏幕坐标后按照现有颜色填充方案向图形中填充数据，至于权重取颜色的 cube 设计与之前三角形和线段的颜色分析类似，就不做详细的实现了。
+
+3.28:
+关于纹理映射，算法思路比较简单这里根据参考：https://blog.csdn.net/popy007/article/details/5570803
+分为两个部分：
+1. 简单的实现部分，根据图形原 x, y 求出关于 1 / z 的线性关系后，求出 x\`, y\` 对应的 uv 像素数据属性。因为原 x, y 对应的是标准 uv 坐标。这个初步实现的方案比较麻烦的一点是在求线性关系上，因此第二步自然而然为优化方案（这里不做强行考虑）。
+2. 这里为了实现之前 triangle 的代码衔接，添加了绑定原理数据，用于 triangle 像素填充的时候进行计算。

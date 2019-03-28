@@ -289,12 +289,13 @@ int transform_check_cvv(const vector_t *v) {
 	if (v->y >  w) check |= 32;
 	return check;
 }
-
+// transform -> ts 包含 projection matrix 和 transform matrix 两个矩阵，还有 world 和 viewport 视图矩阵和世界坐标矩阵(lookAt)
 // 归一化，得到屏幕坐标
 void transform_homogenize(const transform_t *ts, vector_t *y, const vector_t *x) {
 	float rhw = 1.0f / x->w;
 	y->x = (x->x * rhw + 1.0f) * ts->w * 0.5f;
 	y->y = (1.0f - x->y * rhw) * ts->h * 0.5f;
+	// 这个位置有点不明白
 	y->z = x->z * rhw;
 	y->w = 1.0f;
 }
@@ -675,14 +676,14 @@ void device_draw_primitive(device_t *device, const vertex_t *v1,
 	transform_apply(&device->transform, &c1, &v1->pos);
 	transform_apply(&device->transform, &c2, &v2->pos);
 	transform_apply(&device->transform, &c3, &v3->pos);
-
+	// transform 应该已经归一化过了
 	// 裁剪，注意此处可以完善为具体判断几个点在 cvv内以及同cvv相交平面的坐标比例
 	// 进行进一步精细裁剪，将一个分解为几个完全处在 cvv内的三角形
 	if (transform_check_cvv(&c1) != 0) return;
 	if (transform_check_cvv(&c2) != 0) return;
 	if (transform_check_cvv(&c3) != 0) return;
 
-	// 归一化 ?? 为了给 uv 坐标
+	// 归一化(这个归一化不是单位化， 而是指转换为屏幕坐标)
 	transform_homogenize(&device->transform, &p1, &c1);
 	transform_homogenize(&device->transform, &p2, &c2);
 	transform_homogenize(&device->transform, &p3, &c3);
@@ -704,7 +705,7 @@ void device_draw_primitive(device_t *device, const vertex_t *v1,
 		vertex_rhw_init(&t2);	// 初始化 w
 		vertex_rhw_init(&t3);	// 初始化 w
 		
-		// 拆分三角形为0-2个梯形，并且返回可用梯形数量
+		// 拆分三角形为0-2个梯形，并且返回可用梯形数量，实际上是在求做填充三角形内部的顶点
 		n = trapezoid_init_triangle(traps, &t1, &t2, &t3);
 
 		if (n >= 1) device_render_trap(device, &traps[0]);

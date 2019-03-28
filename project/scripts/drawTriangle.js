@@ -34,7 +34,7 @@ exports.myownFillTriangle = function (point1, point2, point3, lines) {
     return tempPoints;
 }
 // 生成三角形边框
-exports.createTriangleBoundary = function (point1, point2, point3, lines) {
+exports.createTriangleBoundary = function (point1, point2, point3, lines, triangle) {
     this.line1 = lines.BresenhamLine(point1, point2);
     this.line2 = lines.BresenhamLine(point2, point3);
     this.line3 = lines.BresenhamLine(point3, point1);
@@ -147,8 +147,13 @@ function fillPixelsY (line1, line2, line3, lines) {
     bottom: p3
 */
 
-exports.normalFillTriangle = function (point1, point2, point3, lines) {
+exports.normalFillTriangle = function (triangle, lines) {
     let tempPoints = [];
+
+    let point1 = triangle.point1;
+    let point2 = triangle.point2;
+    let point3 = triangle.point3;
+
     let pos1 = point1.pos;
     let pos2 = point2.pos;
     let pos3 = point3.pos;
@@ -168,41 +173,38 @@ exports.normalFillTriangle = function (point1, point2, point3, lines) {
         return [];
     }
     else if (dy1 === 0) {
-        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point3, point2, null, lines));
+        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point3, point2, null, lines, triangle));
         return tempPoints;
     }
     else if (dy2 === 0) {
-        tempPoints = tempPoints.concat(this.fillFlatTriangle(point2, point1, point3, null, lines));
+        tempPoints = tempPoints.concat(this.fillFlatTriangle(point2, point1, point3, null, lines, triangle));
         return tempPoints;
     }
     else if (dy3 === 0) {
-        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point2, point3, null, lines));
+        tempPoints = tempPoints.concat(this.fillFlatTriangle(point1, point2, point3, null, lines, triangle));
         return tempPoints;
     }
 
-    tempPoints = this.fillTrianglePixels(point1, point2, point3, lines);
-    if (!tempPoints) tempPoints = this.fillTrianglePixels(point2, point3, point1, lines);
-    if (!tempPoints) tempPoints = this.fillTrianglePixels(point3, point2, point1, lines);
+    tempPoints = this.fillTrianglePixels(point1, point2, point3, lines, triangle);
+    if (!tempPoints) tempPoints = this.fillTrianglePixels(point2, point3, point1, lines, triangle);
+    if (!tempPoints) tempPoints = this.fillTrianglePixels(point3, point2, point1, lines, triangle);
     if (!tempPoints) warn(`The normal triangle tempPoints is empty.`);
 
     return tempPoints;
 }
 
-exports.fillTrianglePixels = function (p1, p2, p3, lines) {
+exports.fillTrianglePixels = function (p1, p2, p3, lines, triangle) {
     let tempPoints = [];
     let pos = p1.pos;
-    this.createTriangleBoundary(p1, p2, p3, lines);
+    this.createTriangleBoundary(p1, p2, p3, lines, triangle);
     for (let i = 0; i < this.line2.length; i++) {
         let point = this.line2[i];
         if (pos.y === point.pos.y) {
-            tempPoints = tempPoints.concat(this.line1);
-            tempPoints = tempPoints.concat(this.line2);
-            tempPoints = tempPoints.concat(this.line3);
             let p4 = new Point(point.pos, point.color);
             // clear the lines
             this.clearTriangleBoundaryCache();
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p3, p4, lines));
-            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p3, p2, p4, lines));
+            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p3, p4, lines, triangle));
+            tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p3, p2, p4, lines, triangle));
             return tempPoints;
         }
     }
@@ -211,11 +213,16 @@ exports.fillTrianglePixels = function (p1, p2, p3, lines) {
     return null;
 }
 
-exports.fillFlatTriangle = function (point1, point2, point3, point4, lines) {
+exports.fillFlatTriangle = function (point1, point2, point3, point4, lines, triangle) {
     let tempPoints = [];
     // exectue the fillFlatTriangle straightly
     if (!point4) point4 = point3;
     this.createTriangleBoundary(point1, point2, point4, lines);
+    // 避免直接绘制的平顶三角形缺少边框
+    tempPoints = tempPoints.concat(this.line1);
+    tempPoints = tempPoints.concat(this.line2);
+    tempPoints = tempPoints.concat(this.line3);
+
     let l1, l2 = [];
     if (this.line1.length > this.line2.length) {
         l1 = this.line1;
@@ -230,10 +237,17 @@ exports.fillFlatTriangle = function (point1, point2, point3, point4, lines) {
         for (let j = 0; j < l2.length; j++) {
             let p2 = l2[j];
             if (p1.pos.y === p2.pos.y) {
-                let line = lines.BresenhamLine(p1, p2);
-                analysisColor(point1, point2, point3, line)
-                tempPoints = tempPoints.concat(line);
-                l2.splice(j, 1);
+                if (triangle.isBindTexture) {
+                    let line = lines.BresenhamLine(p1, p2);
+                    // 重新分析 color
+                    this.fillTexturePixel(lines);
+                }
+                else {
+                    let line = lines.BresenhamLine(p1, p2);
+                    analysisColor(point1, point2, point3, line)
+                    tempPoints = tempPoints.concat(line);
+                    l2.splice(j, 1);
+                }
                 break;
             }
         }
@@ -267,4 +281,9 @@ function analysisColor (point1, point2, point3, line) {
 
         tempPoint.color =  new Color().set(color1.add(color2.add(color3)));
     }
+}
+
+exports.fillTexturePixel = function () {
+    // 怎么写？
+    
 }

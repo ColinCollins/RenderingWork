@@ -12,7 +12,7 @@ const Data = require('../lib/data');
 main();
 
 function main () {
-    ipcRenderer.send('Init-success');
+    ipcRenderer.send('init-success');
 }
 
 ipcRenderer.on('load shader source', (e, sources) => {
@@ -22,7 +22,6 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // translateScene(sources);
     // textureScene(sources);
      cubeScene(sources);
-    // pointLightScene(sources);
 });
 
 // #region cube
@@ -75,11 +74,13 @@ function cubeScene (sources) {
 
 // #endregion
 
-
 // #region texture
 
 function textureScene (sources) {
     InitScene(sources);
+    const path = 'E:\\GitStone\\RenderingWork\\res\\mipmap\\test.jpg';
+    let texture = new Texture(path);
+
 
 }
 

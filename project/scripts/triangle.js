@@ -23,7 +23,10 @@ function Triangle (point1, point2, point3, mvpMatrix, modelMatrix) {
     // depth test
     this.mvpMatrix = mvpMatrix;
     this.modelMatrix= modelMatrix;
-
+    // texture
+    this.isBindTexture = false;
+    // 若存在不同尺寸的 mipmap 就不传入原 textue 数据
+    this.textureMipMap = [];
     // 质心
     this.centroid = this.getCentroid(pos1, pos2, pos3);
 }
@@ -136,7 +139,6 @@ prop.multiplyMatrix = function (matrix4) {
     return new Triangle(newPoint1, newPoint2, newPoint3);
 }
 
-// 这里我们新添加一个深度检测的方法，以为是后序的修正因此不对原代码结构进行修改
 prop.depthBufferTest = function () {
     if (!utils.isDepth || !this.mvpMatrix || !this.modelMatrix) return;
     let pos1 = this.point1.pos.multiplyMatrix(this.mvpMatrix);

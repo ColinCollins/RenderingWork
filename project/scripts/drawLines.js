@@ -146,17 +146,18 @@ exports.CohenSutherland = function (point1, point2) {
 }
 
 function createPoint(x, y, z, totalDir, point1, point2) {
-
     if (point1.pos.z === point2.pos.z) z = point1.pos.z;
-
     let tempPos = new Vec3(x, y, z);
     let tempColor = analysisColor(tempPos, totalDir, point1, point2);
+    // 重新计算 uv 坐标
+    let uv 
     let tempPoint = new Point(tempPos, tempColor);
     return tempPoint;
 }
 
 /* analysis color keep in triangle */
 function analysisColor(pos, totalDir, point1, point2) {
+    if (!point1.color || !point2.color) return null;
     let color1 = new Color().set(point1.color);
     let color2 = new Color().set(point2.color);
     let pos1 = point1.pos;

@@ -76,7 +76,7 @@ exports.pushDepthBuffer = function (triangleBuffer) {
         let y = point.pos.y - 1 + canvasHeight / 2;
         let tarPoint = this.depthTriangleBuffer[x][y];
         if (tarPoint instanceof Point) {
-            if (tarPoint.pos.z > point.pos.z) continue;
+            if (tarPoint.pos.z <= point.pos.z) continue;
         }
         this.depthTriangleBuffer[x][y] = point;
     }
@@ -98,8 +98,13 @@ exports.inputDataArrayBuffer = function () {
     // input triangle
     for (let i = 0; i < this.trianglesBuffer.length; i++) {
         let triangle = this.trianglesBuffer[i];
-        // let triangleBuffer = drawTriangle.myownFillTriangle(triangle.point1, triangle.point2, triangle.point3, drawLines)
-        let triangleBuffer = drawTriangle.normalFillTriangle(triangle.point1, triangle.point2, triangle.point3, drawLines);
+        let triangleBuffer = [];
+        if (triangle.isBindTexture) {
+            triangleBuffer = drawTriangle.textureFillTriangle(triangle, drawLines);
+        }
+        else {
+            triangleBuffer = drawTriangle.normalFillTriangle(triangle, drawLines);
+        }
         this.pushDepthBuffer(triangleBuffer);
     }
     // 所有的像素点数据处理完毕之后写入数据到 arrayBuffer
