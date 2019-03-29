@@ -99,12 +99,7 @@ exports.inputDataArrayBuffer = function () {
     for (let i = 0; i < this.trianglesBuffer.length; i++) {
         let triangle = this.trianglesBuffer[i];
         let triangleBuffer = [];
-        if (triangle.isBindTexture) {
-            triangleBuffer = drawTriangle.textureFillTriangle(triangle, drawLines);
-        }
-        else {
-            triangleBuffer = drawTriangle.normalFillTriangle(triangle, drawLines);
-        }
+        triangleBuffer = drawTriangle.normalFillTriangle(triangle, drawLines);
         this.pushDepthBuffer(triangleBuffer);
     }
     // 所有的像素点数据处理完毕之后写入数据到 arrayBuffer

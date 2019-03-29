@@ -2,6 +2,8 @@ function Vec3 (x = 0, y = 0, z = 0) {
     this.x = x;
     this.y = y;
     this.z = z;
+    // w = 1 表示 point， 0 表示向量
+    this.w = 1;
 }
 
 let prop = Vec3.prototype;
@@ -56,9 +58,9 @@ prop.equal = function (vec3) {
     return true;
 }
 
-prop.cut = function (newVec3) {
+prop.sub = function (newVec3) {
     if (!(newVec3 instanceof Vec3)) {
-        warn(`Vec3 add method can't accept value: ${newVec3}`) ;
+        warn(`Vec3 sub method can't accept value: ${newVec3}`) ;
         return;
     }
     return new Vec3(
@@ -84,10 +86,35 @@ prop.multiplyMatrix = function (matrix4) {
     result.y = result.y / result.w;
     result.z = result.z / result.w;
 
-    return new Vec3(result.x, result.y, result.z);
+    let vec = new Vec3(result.x, result.y, result.z);
+    vec.w = result.w;
+
+    return vec;
 }
 
-prop.format = function () {
+prop.mul = function (value) {
+    return new Vec3(
+        this.x * value,
+        this.y * value,
+        this.z * value
+    )
+}
+prop.div = function (value) {
+    if (!value) return;
+    return new Vec3(
+        this.x / value,
+        this.y / value,
+        this.z / value
+    );
+}
+
+prop.formatNormal = function () {
+    this.x = ownParseInt(this.x);
+    this.y = ownParseInt(this.y);
+    this.z = this.z * 10.0;
+}
+
+prop.formatDepth = function () {
     let value1 = accMul(this.x, canvasWidth / 2);
     let value2 = accMul(this.y, canvasHeight / 2);
 
@@ -95,7 +122,7 @@ prop.format = function () {
     this.y = ownParseInt(this.y, value2);
     this.z = this.z * 10.0;
 
-    log(`result: ${this.x} : ${this.y} : ${this.z}`);
+    // log(`result: ${this.x} : ${this.y} : ${this.z}`);
 }
 
 Object.defineProperty(Vec3.prototype, 'ZERO', {

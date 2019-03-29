@@ -238,9 +238,12 @@ exports.fillFlatTriangle = function (point1, point2, point3, point4, lines, tria
             let p2 = l2[j];
             if (p1.pos.y === p2.pos.y) {
                 if (triangle.isBindTexture) {
+                    // 只能是逆行推导了, 添加 uv 坐标计算。
                     let line = lines.BresenhamLine(p1, p2);
                     // 重新分析 color
-                    this.fillTexturePixel(lines);
+                    this.fillTexturePixel(line, triangle);
+                    tempPoints = tempPoints.concat(line);
+                    l2.splice(j, 1);
                 }
                 else {
                     let line = lines.BresenhamLine(p1, p2);
@@ -283,7 +286,25 @@ function analysisColor (point1, point2, point3, line) {
     }
 }
 
-exports.fillTexturePixel = function () {
-    // 怎么写？
-    
+// 填充 texture 数据
+exports.fillTexturePixel = function (lineBuffer, triangle) {
+    let imgData = triangle.textureMipMap.data;
+    let imgWidth = triangle.textureMipMap.width;
+    let imgHeight = triangle.textureMipMap.height;
+    for (let i = 0; i < lineBuffer.length; i ++) {
+        let point = lineBuffer[i];
+        // uv -> Vec3() -> 屏幕坐标
+        let uv = point.uv;
+
+        uv.x = Math.round(uv.x * point.pos.z * imgWidth);
+        uv.y = Math.round(uv.y * point.pos.z * imgHeight);
+        let index = (uv.x - 1 + (imgHeight - uv.y) * imgHeight) * 4;
+        let red = imgData[index];
+        let green = imgData[index + 1];
+        let blue = imgData[index + 2];
+        let alpha = imgData[index + 3] / 255.0;
+        // 不确定单位区间
+        let color = new Color(red, green, blue, alpha);
+        point.color = color;
+    }
 }

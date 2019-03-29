@@ -132,26 +132,32 @@ prop.multiplyMatrix = function (matrix4) {
     let pos2 = this.point2.pos.multiplyMatrix(matrix4);
     let pos3 = this.point3.pos.multiplyMatrix(matrix4);
 
-    let newPoint1 = new Point(pos1, this.point1.color);
-    let newPoint2 = new Point(pos2, this.point2.color);
-    let newPoint3 = new Point(pos3, this.point3.color);
+    pos1.formatNormal();
+    pos2.formatNormal();
+    pos3.formatNormal();
+
+    // if has texture will cal the uv
+    let uv1 = this.point1.uv.div(pos1.w);
+    let uv2 = this.point2.uv.div(pos2.w);
+    let uv3 = this.point3.uv.div(pos3.w);
+
+    let newPoint1 = new Point(pos1, this.point1.color, uv1);
+    let newPoint2 = new Point(pos2, this.point2.color, uv2);
+    let newPoint3 = new Point(pos3, this.point3.color, uv3);
 
     return new Triangle(newPoint1, newPoint2, newPoint3);
 }
-
+// 深度检测的时候才会使用，用于直接计算深度值，暂时还没有添加 texture 相关的内容
 prop.depthBufferTest = function () {
     if (!utils.isDepth || !this.mvpMatrix || !this.modelMatrix) return;
-    let pos1 = this.point1.pos.multiplyMatrix(this.mvpMatrix);
-    let pos2 = this.point2.pos.multiplyMatrix(this.mvpMatrix);
-    let pos3 = this.point3.pos.multiplyMatrix(this.mvpMatrix);
+    let mvpMatrix = new Matrix4().set(this.mvpMatrix).multiply(this.modelMatrix);
+    let pos1 = this.point1.pos.multiplyMatrix(mvpMatrix);
+    let pos2 = this.point2.pos.multiplyMatrix(mvpMatrix);
+    let pos3 = this.point3.pos.multiplyMatrix(mvpMatrix);
 
-    pos1.z = this.point1.pos.multiplyMatrix(this.modelMatrix).z;
-    pos2.z = this.point2.pos.multiplyMatrix(this.modelMatrix).z;
-    pos3.z = this.point3.pos.multiplyMatrix(this.modelMatrix).z;
-
-    pos1.format();
-    pos2.format();
-    pos3.format();
+    pos1.formatDepth();
+    pos2.formatDepth();
+    pos3.formatDepth();
 
     let newPoint1 = new Point(pos1, this.point1.color);
     let newPoint2 = new Point(pos2, this.point2.color);
