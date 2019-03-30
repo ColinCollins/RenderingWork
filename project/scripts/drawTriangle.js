@@ -34,10 +34,11 @@ exports.myownFillTriangle = function (point1, point2, point3, lines) {
     return tempPoints;
 }
 // 生成三角形边框
-exports.createTriangleBoundary = function (point1, point2, point3, lines, triangle) {
+exports.createTriangleBoundary = function (point1, point2, point3, lines) {
     this.line1 = lines.BresenhamLine(point1, point2);
     this.line2 = lines.BresenhamLine(point2, point3);
     this.line3 = lines.BresenhamLine(point3, point1);
+    
     // remove the repeat point
     this.line1.splice(0, 2);
     this.line2.splice(0, 2);
@@ -196,11 +197,11 @@ exports.normalFillTriangle = function (triangle, lines) {
 exports.fillTrianglePixels = function (p1, p2, p3, lines, triangle) {
     let tempPoints = [];
     let pos = p1.pos;
-    this.createTriangleBoundary(p1, p2, p3, lines, triangle);
+    this.createTriangleBoundary(p1, p2, p3, lines);
     for (let i = 0; i < this.line2.length; i++) {
         let point = this.line2[i];
         if (pos.y === point.pos.y) {
-            let p4 = new Point(point.pos, point.color);
+            let p4 = new Point(point.pos, point.color, point.uv);
             // clear the lines
             this.clearTriangleBoundaryCache();
             tempPoints = tempPoints.concat(this.fillFlatTriangle(p1, p2, p3, p4, lines, triangle));
@@ -218,6 +219,13 @@ exports.fillFlatTriangle = function (point1, point2, point3, point4, lines, tria
     // exectue the fillFlatTriangle straightly
     if (!point4) point4 = point3;
     this.createTriangleBoundary(point1, point2, point4, lines);
+
+    if (triangle.isBindTexture) {
+        this.fillTexturePixel(this.line1, triangle);
+        this.fillTexturePixel(this.line2, triangle);
+        this.fillTexturePixel(this.line3, triangle);
+    }
+
     // 避免直接绘制的平顶三角形缺少边框
     tempPoints = tempPoints.concat(this.line1);
     tempPoints = tempPoints.concat(this.line2);
@@ -294,11 +302,10 @@ exports.fillTexturePixel = function (lineBuffer, triangle) {
     for (let i = 0; i < lineBuffer.length; i ++) {
         let point = lineBuffer[i];
         // uv -> Vec3() -> 屏幕坐标
-        let uv = point.uv;
-
-        uv.x = Math.round(uv.x * point.pos.z * imgWidth);
-        uv.y = Math.round(uv.y * point.pos.z * imgHeight);
-        let index = (uv.x - 1 + (imgHeight - uv.y) * imgHeight) * 4;
+        let uv = new Vec3(point.uv.x, point.uv.y);
+        uv.x = Math.round(uv.x * point.pos.w * imgWidth);
+        uv.y = Math.round(uv.y * point.pos.w * imgHeight);
+        let index = (uv.x - 1 + (imgHeight - uv.y - 1) * imgHeight) * 4;
         let red = imgData[index];
         let green = imgData[index + 1];
         let blue = imgData[index + 2];

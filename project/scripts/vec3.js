@@ -1,9 +1,9 @@
-function Vec3 (x = 0, y = 0, z = 0) {
+function Vec3 (x = 0, y = 0, z = 0, w = 1) {
     this.x = x;
     this.y = y;
     this.z = z;
     // w = 1 表示 point， 0 表示向量
-    this.w = 1;
+    this.w = w;
 }
 
 let prop = Vec3.prototype;
@@ -86,10 +86,7 @@ prop.multiplyMatrix = function (matrix4) {
     result.y = result.y / result.w;
     result.z = result.z / result.w;
 
-    let vec = new Vec3(result.x, result.y, result.z);
-    vec.w = result.w;
-
-    return vec;
+    return new Vec3(result.x, result.y, result.z, result.w);
 }
 
 prop.mul = function (value) {

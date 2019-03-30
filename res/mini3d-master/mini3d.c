@@ -667,8 +667,7 @@ void device_render_trap(device_t *device, trapezoid_t *trap) {
 }
 
 // 根据 render_state 绘制原始三角形
-void device_draw_primitive(device_t *device, const vertex_t *v1, 
-	const vertex_t *v2, const vertex_t *v3) {
+void device_draw_primitive(device_t *device, const vertex_t *v1, const vertex_t *v2, const vertex_t *v3) {
 	point_t p1, p2, p3, c1, c2, c3;
 	int render_state = device->render_state;
 

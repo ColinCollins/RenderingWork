@@ -26,16 +26,16 @@ function Texture (path) {
 
 let prop = Texture.prototype;
 // 渲染一个矩形, drawLine 使用新的填充方式
-prop.renderSquare = function (x, y, mvpMatrix) {
+prop.renderSquare = function (x, y, mvpMatrix, modelMatrix) {
     if (!this.image) return;
     // triangle1
     let imgWidth = this.image.width;
     let imgHeight = this.image.height;
     // 设定好与原 texture 相同尺寸
-    let pos1 = new Vec3((imgWidth / 2 + x), (imgHeight / 2 + y), 1);
-    let pos2 = new Vec3((-imgWidth / 2 + x), (imgHeight / 2 + y), 1);
-    let pos3 = new Vec3((-imgWidth / 2 + x), (-imgHeight / 2 + y), 1);
-    let pos4 = new Vec3((imgWidth / 2 + x), (-imgHeight / 2 + y), 1);
+    let pos1 = new Vec3((imgWidth / 2 + x) / (canvasWidth / 2), (imgHeight / 2 + y) / (canvasHeight / 2), 1);
+    let pos2 = new Vec3((-imgWidth / 2 + x) / (canvasWidth / 2), (imgHeight / 2 + y) / (canvasHeight / 2), 1);
+    let pos3 = new Vec3((-imgWidth / 2 + x) / (canvasWidth / 2), (-imgHeight / 2 + y) / (canvasHeight / 2), 1);
+    let pos4 = new Vec3((imgWidth / 2 + x) / (canvasWidth / 2), (-imgHeight / 2 + y) / (canvasHeight / 2), 1);
 
     let point1 = new Point(pos1, null, new Vec3(1, 1, 0));
     let point2 = new Point(pos2, null, new Vec3(0, 1, 0));
@@ -50,7 +50,8 @@ prop.renderSquare = function (x, y, mvpMatrix) {
         let point1 = points[indices[i]];
         let point2 = points[indices[i + 1]];
         let point3 = points[indices[i + 2]];
-        let triangle = new Triangle(point1, point2, point3).multiplyMatrix(mvpMatrix);
+        let triangle = new Triangle(point1, point2, point3, mvpMatrix, modelMatrix);
+        triangle = triangle.depthBufferTest();
         triangle.isBindTexture = true;
         // 暂时先只考虑原本的像素信息
         triangle.textureMipMap = this.image;

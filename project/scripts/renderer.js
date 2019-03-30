@@ -19,8 +19,8 @@ ipcRenderer.on('load shader source', (e, sources) => {
     // pointScene(sources);
     // lineScene(sources);
     // triangleScene(sources);
-     translateScene(sources);
-    // textureScene(sources);
+    // translateScene(sources);
+     textureScene(sources);
     // cubeScene(sources);
 });
 
@@ -80,16 +80,17 @@ function textureScene (sources) {
     InitScene(sources);
     const path = 'E:\\GitStone\\RenderingWork\\res\\mipmap\\test.jpg';
     let texture = new Texture(path);
+    utils.isDepth = true;
     setTimeout(()=> {
         let mvpMatrix = new Matrix4().setPerspective(50.0, canvasWidth / canvasHeight, 1, 100);
         mvpMatrix.lookAt(
-            0.0, 2.0, 3.0,
+            -3.0, 2.0, 3.0,
             0.0, 0.0, 0.0,
             0.0, 1.0, 0.0
         );
-        let modelMatrix = new Matrix4().setRotate(50.0, 0.0, 1.0, 0.0).scale(0.6, 0.6, 0.6);
+        let modelMatrix = new Matrix4().setRotate(0.0, 0.0, 1.0, 0.0);
         mvpMatrix.multiply(modelMatrix);
-        let triangles = texture.renderSquare(0, 0, mvpMatrix);
+        let triangles = texture.renderSquare(0, 0, mvpMatrix, modelMatrix);
         utils.trianglesBuffer = utils.trianglesBuffer.concat(triangles);
         draw();
     }, 3000);

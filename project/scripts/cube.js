@@ -42,8 +42,4 @@ prop.normalCubeTriangles = function () {
     return triangles;
 }
 
-prop.bindTexture = function () {
-
-}
-
 module.exports = Cube;

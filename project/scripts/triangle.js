@@ -159,11 +159,16 @@ prop.depthBufferTest = function () {
     pos2.formatDepth();
     pos3.formatDepth();
 
-    let newPoint1 = new Point(pos1, this.point1.color);
-    let newPoint2 = new Point(pos2, this.point2.color);
-    let newPoint3 = new Point(pos3, this.point3.color);
+    // if has texture will cal the uv
+    let uv1 = this.point1.uv.div(pos1.w);
+    let uv2 = this.point2.uv.div(pos2.w);
+    let uv3 = this.point3.uv.div(pos3.w);
 
-    return new Triangle(newPoint1, newPoint2, newPoint3);
+    let newPoint1 = new Point(pos1, this.point1.color, uv1);
+    let newPoint2 = new Point(pos2, this.point2.color, uv2);
+    let newPoint3 = new Point(pos3, this.point3.color, uv3);
+
+    return new Triangle(newPoint1, newPoint2, newPoint3, this.mvpMatrix, this.modelMatrix);
 }
 
 prop.getCentroid = function (pos1, pos2, pos3) {

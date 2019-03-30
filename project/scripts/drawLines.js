@@ -19,12 +19,15 @@ exports.BresenhamLine = function (point1, point2) {
         let dy = Math.max((pos2.y - pos1.y), (pos1.y - pos2.y));
         let startY, startZ, stepZ = 0;
         let startUV, stepV = 0;
+        let startW, stepW = 0;
         if (pos1.y < pos2.y) {
             startY = pos1.y;
             startZ = pos1.z;
             stepZ = accDiv((pos2.z - pos1.z), Math.abs(dy));
             startUV = uv1;
             stepV = uv2.sub(uv1).y / dy;
+            startW = pos1.w;
+            stepW = (pos2.w - pos1.w) / dy;
         }
         else {
             startY = pos2.y;
@@ -32,40 +35,49 @@ exports.BresenhamLine = function (point1, point2) {
             stepZ = accDiv((pos1.z - pos2.z), Math.abs(dy));
             startUV = uv2;
             stepV = uv1.sub(uv2).y / dy;
+            startW = pos2.w;
+            stepW = (pos1.w - pos2.w) / dy;
         }
 
         for (let i = 1; i < dy; i++) {
             let y = startY + i;
             let z = startZ + stepZ * i;
             let uv = new Vec3(startUV.x, startUV.y + (stepV * i));
-            tempPoints.push(createPoint(x, y, z, uv, dir, point1, point2));
+            let w = startW + stepW * i;
+            tempPoints.push(createPoint(x, y, z, w, uv, dir, point1, point2));
         }
     }
     else if (pos1.y === pos2.y && pos1.x !== pos2.x) {
         let y = pos1.y;
         let dx = Math.max((pos2.x - pos1.x), (pos1.x - pos2.x));
         let startX, startZ, stepZ = 0
-        let startUV, stepU = 0;
+        let startUV, stepUV = 0;
+        let startW, stepW = 0;
         if (pos1.x < pos2.x) {
             startX = pos1.x;
             startZ = pos1.z;
             stepZ = accDiv((pos2.z - pos1.z), Math.abs(dx));
             startUV = uv1;
-            stepU = uv2.sub(uv1).x / dx;
+            stepUV = new Vec3(uv2.sub(uv1).x / dx, uv2.sub(uv1).y / dx);
+            startW = pos1.w;
+            stepW = (pos2.w - pos1.w) / dx;
         }
         else {
             startX = pos2.x;
             startZ = pos2.z;
             stepZ = accDiv((pos1.z - pos2.z), Math.abs(dx));
             startUV = uv2;
-            stepU = uv1.sub(uv2).x / dx;
+            stepUV = new Vec3(uv1.sub(uv2).x / dx, uv1.sub(uv2).y / dx);
+            startW = pos2.w;
+            stepW = (pos1.w - pos2.w) / dx;
         }
 
         for (let i = 1; i < dx; i++) {
             let x = startX + i;
             let z = startZ + stepZ * i;
-            let uv = new Vec3(startUV.x + (stepU * i), startUV.y);
-            tempPoints.push(createPoint(x, y, z, uv, dir, point1, point2));
+            let uv = new Vec3(startUV.x + (stepUV.x * i), startUV.y + (stepUV.y * i));
+            let w = startW + stepW * i;
+            tempPoints.push(createPoint(x, y, z, w, uv, dir, point1, point2));
         }
     }
     else {
@@ -80,12 +92,15 @@ exports.BresenhamLine = function (point1, point2) {
             let sym = rate < 0 ? -1 : 1;
             let stepZ, startZ = 0;
             let startUV, stepUV;
+            let startW, stepW = 0;
             if (rate > 0 && pos1.y < pos2.y || rate < 0 && pos1.y > pos2.y) {
                 startPos = pos1;
                 startZ = pos1.z;
                 stepZ = accDiv((pos2.z - pos1.z), Math.abs(dy));
                 startUV = uv1;
                 stepUV = new Vec3(uv2.sub(uv1).x / Math.abs(dx), uv2.sub(uv1).y / Math.abs(dy));
+                startW = pos1.w;
+                stepW = (pos2.w - pos1.w) / Math.abs(dy);
             }
             else {
                 startPos = pos2;
@@ -93,6 +108,8 @@ exports.BresenhamLine = function (point1, point2) {
                 stepZ = accDiv((pos1.z - pos2.z), Math.abs(dy));
                 startUV = uv2;
                 stepUV = new Vec3(uv1.sub(uv2).x / Math.abs(dx), uv1.sub(uv2).y / Math.abs(dy));
+                startW = pos2.w;
+                stepW = (pos1.w - pos2.w) / Math.abs(dy);
             }
 
             let diff = 0;
@@ -104,7 +121,8 @@ exports.BresenhamLine = function (point1, point2) {
                     diff += 1;
                 }
                 let uv = new Vec3(startUV.x + (diff * stepUV.x), startUV.y + (i * stepUV.y));
-                tempPoints.push(createPoint((diff + startPos.x), y, z, uv, dir, point1, point2));
+                let w = startW + stepW * i;
+                tempPoints.push(createPoint((diff + startPos.x), y, z, w, uv, dir, point1, point2));
             }
         }
         else {
@@ -112,17 +130,22 @@ exports.BresenhamLine = function (point1, point2) {
             startPos = pos1.x < pos2.x ? pos1 : pos2;
             let stepZ, startZ = 0;
             let startUV, stepUV;
+            let startW, stepW = 0;
             if (startPos.equal(pos1)) {
                 startZ = pos1.z;
                 stepZ = accDiv((pos2.z - pos1.z), Math.abs(dx));
                 startUV = uv1;
                 stepUV = new Vec3(uv2.sub(uv1).x / Math.abs(dx), uv2.sub(uv1).y / Math.abs(dy));
+                startW = pos1.w;
+                stepW = (pos2.w - pos1.w) / Math.abs(dx);
             }
             else {
                 startZ = pos2.z;
                 stepZ = accDiv((pos1.z - pos2.z), Math.abs(dx));
                 startUV = uv2;
                 stepUV = new Vec3(uv1.sub(uv2).x / Math.abs(dx), uv1.sub(uv2).y / Math.abs(dy));
+                startW = pos2.w;
+                stepW = (pos1.w - pos2.w) / Math.abs(dx);
             }
 
             let diff = 0;
@@ -133,8 +156,9 @@ exports.BresenhamLine = function (point1, point2) {
                 if (Math.abs(curRate) < Math.abs(rate)) {
                     diff += rate < 0 ? -1 : 1;
                 }
-                let uv = new Vec3(startUV.x + (i * stepUV.x), startUV.y + (diff * stepUV.y));
-                tempPoints.push(createPoint(x, (diff + startPos.y), z, uv, dir, point1, point2));
+                let uv = new Vec3(startUV.x + (i * stepUV.x), startUV.y + (Math.abs(diff) * stepUV.y));
+                let w = startW + stepW * i;
+                tempPoints.push(createPoint(x, (diff + startPos.y), z, w, uv, dir, point1, point2));
             }
         }
     }
@@ -172,9 +196,9 @@ exports.CohenSutherland = function (point1, point2) {
     }
 }
 
-function createPoint(x, y, z, uv, totalDir, point1, point2) {
+function createPoint(x, y, z, w, uv, totalDir, point1, point2) {
     if (point1.pos.z === point2.pos.z) z = point1.pos.z;
-    let tempPos = new Vec3(x, y, z);
+    let tempPos = new Vec3(x, y, z, w);
     let tempColor = analysisColor(tempPos, totalDir, point1, point2);
     let tempPoint = new Point(tempPos, tempColor, uv);
     return tempPoint;
