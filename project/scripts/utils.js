@@ -41,6 +41,7 @@ exports.angleStep = 0;
 exports.data = new Date();
 
 exports.clearCanvas = function () {
+    window.cancelAnimationFrame(this.animID);
     gl.clear(gl.COLOR_BIT_BUFFER);
     this.linesArrayBuffer = [];
     this.trianglesBuffer = [];
@@ -48,6 +49,7 @@ exports.clearCanvas = function () {
     this.circlesBuffer = [];
     this.arrayBuffer = [];
 }
+exports.animID = 0;
 // 是否进行深度检测，可以用于节省内存
 exports.isDepth = false;
 // 存储 lines

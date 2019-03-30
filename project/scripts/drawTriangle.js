@@ -226,11 +226,6 @@ exports.fillFlatTriangle = function (point1, point2, point3, point4, lines, tria
         this.fillTexturePixel(this.line3, triangle);
     }
 
-    // 避免直接绘制的平顶三角形缺少边框
-    tempPoints = tempPoints.concat(this.line1);
-    tempPoints = tempPoints.concat(this.line2);
-    tempPoints = tempPoints.concat(this.line3);
-
     let l1, l2 = [];
     if (this.line1.length > this.line2.length) {
         l1 = this.line1;

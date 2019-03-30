@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Hello World!</title>
@@ -10,11 +11,32 @@
 
 </head>
 
-<body>
-    <h1>WebGL Render</h1>
-    <div class="container">
-        <!-- viewport -->
-        <canvas id="webgl" width="960" height="640"></canvas>
+<body class="media">
+    <div class="summary media-left">
+        <aside class="menu">
+            <p class="menu-label"> Scene </p>
+            <ul class="menu-list">
+                <li><a id="Point">Point</a></li>
+                <li><a id="Circle">Circle</a></li>
+                <li><a id="BresenhamLine">BresenhamLine</a></li>
+                <li><a id="CohenSutherland">CohenSutherland</a></li>
+                <li><a id="Triangle">Triangle</a></li>
+                <li><a id="Translate">Triangle</a></li>
+                <li><a id="Texture">Texture</a></li>
+                <li><a id="MipMap">MipMap</a></li>
+                <li><a id="Cube">Cube</a></li>
+            </ul>
+        </aside>
+    </div>
+    <div class="media-content">
+        <div class="mTitle columns">
+            <h1 class="title column is-four-fifths">WebGL Render</h1>
+            <p class="tips column">Not Ready</p>
+        </div>
+        <div class="container">
+            <!-- viewport -->
+            <canvas id="webgl" width="960" height="640"></canvas>
+        </div>
     </div>
 </body>
 <!-- webgl file -->
@@ -25,19 +47,19 @@
 <!-- font-awesome lib -->
 <script defer src="../bower_components/font-awesome/js/all.js"></script>
 <script>
-        $ = require('jquery');
-        Vec3 = require('./scripts/vec3');
-        Color = require('./scripts/color');
-        Point = require('./scripts/point');
-        Circle = require('./scripts/circle');
-        Line = require('./scripts/line.js');
-        Triangle = require('./scripts/triangle');
-        Texture = require('./scripts/texture');
-        Cube = require('./scripts/cube');
-        // You can also require other files to run in this process
-        require('./scripts/debug.js')
-        require('./scripts/renderer.js');
+    $ = require('jquery');
+    Vec3 = require('./scripts/vec3');
+    Color = require('./scripts/color');
+    Point = require('./scripts/point');
+    Circle = require('./scripts/circle');
+    Line = require('./scripts/line.js');
+    Triangle = require('./scripts/triangle');
+    Texture = require('./scripts/texture');
+    Cube = require('./scripts/cube');
+    // You can also require other files to run in this process
+    require('./scripts/debug.js')
+    require('./scripts/renderer.js');
 
 </script>
-
+<script src="menu.js" type="text/javascript"></script>
 </html>

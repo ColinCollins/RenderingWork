@@ -206,7 +206,6 @@ function createPoint(x, y, z, w, uv, totalDir, point1, point2) {
 
 /* analysis color keep in triangle */
 function analysisColor(pos, totalDir, point1, point2) {
-    if (!point1.color || !point2.color) return null;
     let color1 = new Color().set(point1.color);
     let color2 = new Color().set(point2.color);
     let pos1 = point1.pos;
@@ -255,19 +254,19 @@ function calculateNewPoint(lostPoint, containPoint) {
         // 这里只能考虑 point position 而不考虑步长
         if (lostPos.x < -width) {
             let y = (dy / dx) * -width + (len / dx);
-            return new Point(new Vec3(-width, y), lostPos.color);
+            return new Point(new Vec3(-width, y), lostPoint.color);
         }
         else if (lostPos.x > width) {
             let y = (dy / dx) * width + (len / dx);
-            return new Point(new Vec3(width, y), lostPos.color);
+            return new Point(new Vec3(width, y), lostPoint.color);
         }
         else if (lostPos.y < -height) {
             let x = (dx / dy) * -height - (len / dy);
-            return new Point(new Vec3(x, -height), lostPos.color);
+            return new Point(new Vec3(x, -height), lostPoint.color);
         }
         else {
             let x = (dx / dy) * height - (len / dy);
-            return new Point(new Vec3(x, height), lostPos.color);
+            return new Point(new Vec3(x, height), lostPoint.color);
         }
     }
 }
