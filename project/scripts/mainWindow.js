@@ -6,7 +6,8 @@ exports.createMainWindow = () => {
         width: 1280,
         height: 960,
         minWidth: 800,
-        minHeight: 640
+        minHeight: 640,
+        resizable: false
     });
     console.log(__dirname);
     // and load the index.html of the app.

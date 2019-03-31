@@ -79,35 +79,40 @@ prop.updateMipmap = function (image) {
         data: nData
     };
     let v = height * 4;
-    for (let i = 0; i < height * width * 4; i += 8) {
-        let r1 = data[(v * i) + i];
-        let g1 = data[(v * i) + i + 1];
-        let b1 = data[(v * i) + i + 2];
-        let a1 = data[(v * i) + i + 3];
+    for (let j = 0; j < height - 1; j += 2) {
+        for (let i = 0; i < width * 4; i += 8) {
+            let r1 = data[(v * j) + i];
+            let g1 = data[(v * j) + i + 1];
+            let b1 = data[(v * j) + i + 2];
+            let a1 = data[(v * j) + i + 3];
 
-        let r2 = data[(v * (i + 1)) + i];
-        let g2 = data[(v * (i + 1)) + i + 1];
-        let b2 = data[(v * (i + 1)) + i + 2];
-        let a2 = data[(v * (i + 1)) + i + 3];
+            let r2 = data[(v * (j + 1)) + i];
+            let g2 = data[(v * (j + 1)) + i + 1];
+            let b2 = data[(v * (j + 1)) + i + 2];
+            let a2 = data[(v * (j + 1)) + i + 3];
 
-        let r3 = data[(v * i) + i + 4];
-        let g3 = data[(v * i) + i + 5];
-        let b3 = data[(v * i) + i + 6];
-        let a3 = data[(v * i) + i + 7];
+            let r3, g3, b3, a3, r4, g4, b4, a4 = 0;
+            if (i % (width * 4) < (width - 1) * 4) {
+                r3 = data[(v * j) + i + 4];
+                g3 = data[(v * j) + i + 5];
+                b3 = data[(v * j) + i + 6];
+                a3 = data[(v * j) + i + 7];
 
-        let r4 = data[(v * (i + 1)) + i + 4];
-        let g4 = data[(v * (i + 1)) + i + 5];
-        let b4 = data[(v * (i + 1)) + i + 6];
-        let a4 = data[(v * (i + 1)) + i + 7];
+                r4 = data[(v * (j + 1)) + i + 4];
+                g4 = data[(v * (j + 1)) + i + 5];
+                b4 = data[(v * (j + 1)) + i + 6];
+                a4 = data[(v * (j + 1)) + i + 7];
+            }
 
-        let nr = GammaCorrectedAverage(r1, r2, r3, r4);
-        let ng = GammaCorrectedAverage(g1, g2, g3, g4);
-        let nb = GammaCorrectedAverage(b1, b2, b3, b4);
-        let na = GammaCorrectedAverage(a1, a2, a3, a4);
-        nData.push(nr);
-        nData.push(ng);
-        nData.push(nb);
-        nData.push(na);
+            let nr = GammaCorrectedAverage(r1, r2, r3, r4);
+            let ng = GammaCorrectedAverage(g1, g2, g3, g4);
+            let nb = GammaCorrectedAverage(b1, b2, b3, b4);
+            let na = GammaCorrectedAverage(a1, a2, a3, a4);
+            nData.push(nr);
+            nData.push(ng);
+            nData.push(nb);
+            nData.push(na);
+        }
     }
 
     this.updateMipmap(nImage);
