@@ -7,7 +7,8 @@ exports.createMainWindow = () => {
         height: 960,
         minWidth: 800,
         minHeight: 640,
-        resizable: false
+        resizable: false,
+        icon: `${__dirname}/icons/icon.ico`
     });
     console.log(__dirname);
     // and load the index.html of the app.

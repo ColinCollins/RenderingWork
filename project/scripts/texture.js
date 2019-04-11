@@ -119,7 +119,7 @@ prop.updateMipmap = function (image) {
 }
 // 伽马校正计算 mipmap （实际上是对颜色值或者亮度值的校正）
 function GammaCorrectedAverage(a, b, c, d) {
-    return (a + b + c + d) / 4;
+    return Math.sqrt(Math.pow(a,2) + Math.pow(b,2) + Math.pow(c, 2) + Math.pow(d, 2)) / 4;
 }
 
 prop.renderMipmap = function () {

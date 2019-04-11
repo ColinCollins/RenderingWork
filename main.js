@@ -4,7 +4,7 @@ const mainWindow = require('./project/scripts/mainWindow');
 // nodejs module only could use in the mainjs
 const fs = require('fs');
 
-require('electron-reload')(__dirname);
+/* require('electron-reload')(__dirname); */
 
 app.on('ready', mainWindow.createMainWindow);
 

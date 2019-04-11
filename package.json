@@ -1,12 +1,12 @@
 {
-  "name": "electron-quick-start",
+  "name": "RenderWork",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "A mini3D render",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/ColinCollins/RenderingWork",
   "keywords": [
     "Electron",
     "quick",
@@ -14,16 +14,8 @@
     "tutorial",
     "demo"
   ],
-  "author": "GitHub",
+  "author": "Colin",
   "license": "CC0-1.0",
-  "devDependencies": {
-    "devtron": "^1.4.0",
-    "electron": "3.1.0",
-    "electron-rebuild": "^1.8.4",
-    "electron-reload": "^1.4.0",
-    "electron-window-state": "^5.0.3",
-    "query-string": "^6.3.0"
-  },
   "dependencies": {
     "jquery": "^3.3.1",
     "electron": "3.1.0"

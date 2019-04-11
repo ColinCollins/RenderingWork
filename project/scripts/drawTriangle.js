@@ -224,7 +224,15 @@ exports.fillFlatTriangle = function (point1, point2, point3, point4, lines, tria
         this.fillTexturePixel(this.line1, triangle);
         this.fillTexturePixel(this.line2, triangle);
         this.fillTexturePixel(this.line3, triangle);
+    }else {
+        analysisColor(point1, point2, point3, this.line1);
+        analysisColor(point1, point2, point3, this.line2);
+        analysisColor(point1, point2, point3, this.line3);
     }
+
+    tempPoints = tempPoints.concat(this.line1);
+    tempPoints = tempPoints.concat(this.line2);
+    tempPoints = tempPoints.concat(this.line3);
 
     let l1, l2 = [];
     if (this.line1.length > this.line2.length) {
